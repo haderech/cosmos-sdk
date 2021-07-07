@@ -1,0 +1,95 @@
+<!--
+order: 4
+-->
+
+# Cosmos SDK의 주요 구성 요소(component)
+
+Cosmos SDK는 Tendermint 기반의 안전한 상태 기계(state-machine) 개발을 용이하게 만들어주는 프레임워크입니다. 본질적으로, SDK는 [ABCI](./sdk-app-architecture.md#abci)의 보일러플레이트를 Golang으로 구현한 것입니다. 여기에는 데이터를 보존하기 위한 [`멀티스토어(multistore)`](../core/store.md#multistore)와 트랜잭션(transaction)을 처리하기 위한 [`라우터(router)`](../core/baseapp.md#routing)가 함께 제공됩니다.
+
+다음은 Tendermint에서 전송된 트랜잭션들이 Cosmos SDK를 기반으로 작성된 애플리케이션에서 `DeliverTx`를 통해 어떻게 처리되는지를 간략하게 보여줍니다:
+
+1. Tendermint 합의 엔진으로부터 받은 트랜잭션(`transactions`)를 디코딩합니다. (Tendermint 는 오직 `[]bytes`만을 처리한다는 것을 기억하십시오).
+2. `transactions`에서 `메시지(messages)`를 추출하고 기본적인 온전성 검사(sanity check)를 수행합니다.
+3. 각 메시지를 적절한 모듈로 라우팅하여 처리하도록 합니다.
+4. 상태 변경을 커밋(commit)합니다.
+
+## `baseapp`
+
+`baseapp`은 Cosmos SDK 애플리케이션의 보일러플레이트 구현입니다. 이는 기반이 된 합의 엔진과의 연결을 위한 ABCI 구현과 함께 제공됩니다. 일반적으로 Cosmos SDK 애플리케이션은 [`app.go`](../basics/app-anatomy.md#코어-애플리케이션-파일)에 내장(embed)하여 `baseapp`을 확장(extend)합니다. SDK 애플리케이션 튜토리얼 에서 위의 예를 참조하십시오.
+
++++ https://github.com/cosmos/sdk-tutorials/blob/c6754a1e313eb1ed973c5c91dcc606f2fd288811/app.go#L72-L92
+
+`baseapp`의 목적은 스토어(store)와 확장 가능한 상태 기계 사이에 안전한 인터페이스를 제공하는 동시에, (ABCI에는 충실하면서) 상태 기계에 대한 정의는 최대한 줄이는 것 입니다.
+
+`baseapp`에 대한 자세한 내용은, [여기](../core/baseapp.md)를 클릭하십시오.
+
+## 멀티스토어(multistore)
+
+Cosmos SDK는 상태를 유지하기 위한 [`multistore`](../core/store.md#multistore)를 제공합니다. `multistore`에서는 개발자들에게 원하는 만큼의 [`KVStores`](../core/store.md#base-layer-kvstores)를 선언할 수 있습니다. 이 `KVStores`는 `[]byte`의 타입만을 값으로 허용하므로 모든 사용자 지정 구조체(custom structure)들은 [코덱(codec)](../core/encoding.md)을 사용하여 저장하기 전 마샬링(marshall)해야 합니다.
+
+멀티스토어 추상화는 각각의 모듈을 통해 관리되는 별개의 구획(compartment)으로 상태를 분리하는데 사용됩니다. 멀티스토어에 대한 자세한 정보는 [여기](../core/store.md#multistore)를 클릭하십시오
+
+## 모듈(Modules)
+
+Cosmos SDK의 강점은 모듈화에 있습니다. SDK 애플리케이션은 상호 운용(interoperable)이 가능한 모듈들의 모음을 합쳐 만들어집니다. SDK가 각 메시지를 해당하는 모듈로 라우팅하는 것을 담당하는 동안, 각각의 모듈들은 상태의 부분집합(subset)을 정의하고 자체 메시지/트랜잭션 프로세서를 포함합니다.
+
+아래는 트랜잭션이 유효한 블록으로 수신됐을 때, 각 풀-노드(full-node)들의 애플리케이션이 어떻게 처리하는 지를 간략하게 도식화 한것입니다:
+
+```
+                                      +
+                                      |
+                                      |  트랜잭션이 풀-노드들의 Tendermint 엔진으로부터
+                                      |  DeliverTx를 통해 노드의 애플리케이션으로
+                                      |  전달됩니다
+                                      |
+                                      |
+                +---------------------v--------------------------+
+                |                 애플리케이션                     ㅤ|
+                |                                                |
+                |     baseapp의 메서드를 사용: Tx디코딩,         ㅤㅤㅤㅤ|
+                |     추출 및 메시지(들) 라우팅                        |
+                |                                                |
+                +---------------------+--------------------------+
+                                      |
+                                      |
+                                      |
+                                      +---------------------------+
+                                                                  |
+                                                                  |
+                                                                  |  메시지가 처리를 위해
+                                                                  |  올바른 모듈로
+                                                                  |  라우팅됨
+                                                                  |
+                                                                  |
++----------------+  +---------------+  +----------------+  +------v----------+
+|                |  |               |  |                |  |                 |
+|    AUTH 모듈ㅤㅤㅤ|  |   BANK 모듈    |  |ㅤㅤSTAKING 모듈 ㅤ|  |     GOV 모듈     |
+|                |  |               |  |                |  |                 |
+|                |  |               |  |                |  |    메시지 처리, ㅤㅤ|
+|                |  |               |  |                |  |   상태 업데이트   ㅤ|
+|                |  |               |  |                |  |                 |
++----------------+  +---------------+  +----------------+  +------+----------+
+                                                                  |
+                                                                  |
+                                                                  |
+                                                                  |
+                                       +--------------------------+
+                                       |
+                                       | Tendermint로 결과 반환
+                                       | (0=Ok, 1=Err)
+                                       v
+```
+
+각각의 모듈은 하나의 작은 상태 기계로 볼 수 있습니다. 개발자는 모듈에 의해 처리되는 상태의 부분집합과 함께, 상태를 변경하는 사용자 지정 메시지 타입 또한 정의해야 합니다. (*주의:* `messages` 는 `baseapp`에 의해 `transactions`으로부터 추출됩니다). 일반적으로 각 모듈은 자체적으로 정의한 상태의 부분집합을 유지하기 위해 `multistore`에 자체 `KVStores`를 선언합니다. 대부분의 개발자는 자체 모듈을 빌드할때 다른 서드파티(3rd party)의 모듈에 대한 접근해야 합니다. Cosmos-SDK가 개방된 프레임워크라는 점을 고려할때 일부 모듈은 악의적일 수 있으며, 이는 모듈 간(inter-module) 상호작용에 대해 추론할 보안 원칙(security principles)이 필요하다는 것을 의미합니다. 이러한 원칙은 오브젝트-자격([object-capabilities](../core/ocap.md))에 기반합니다. 실제로, 각 모듈이 다른 모듈의 접근 제어 목록(access control list)을 유지하는 대신에, 각 모듈은 다른 모듈로 전달되어 사전 정의된 자격의 집합을 부여할 수 있는 키퍼(`keeper`)라는 이름의 특수한 객체를 구현합니다.
+
+SDK 모듈은 SDK의 `x/`폴더에 정의됩니다. 일부 코어 모듈은 다음을 포함합니다:
+
+- `x/auth`: 계정 및 서명을 관리하는 데 사용됩니다.
+- `x/bank`: 토큰과 토큰 전송을 활성화하는데 사용됩니다.
+- `x/staking` + `x/slashing`: 지분증명(Proof-Of-Stake) 블록체인을 구축하는 데 사용됩니다.
+
+누구나 앱에서 사용 가능한 `x/`에 존재하는 기존 모듈 외에도 SDK는 자신만의 맞춤형 모듈을 빌드할 수 있도록 합니다. [관련 튜토리얼](https://cosmos.network/docs/tutorial/keeper.html)에서 확인할 수 있습니다.
+
+## 다음 {hide}
+
+[SDK 애플리케이션의 해부](../basics/app-anatomy.md)에 대해서 알아 보겠습니다. {hide}
