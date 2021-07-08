@@ -24,7 +24,7 @@ Cosmos SDK 는 맞춤형 애플리케이션별 전용 블록체인 구축을 위
 
 - SDK 에서 사용할 수 있는 기본 합의 엔진은 [Tendermint Core](https://github.com/tendermint/tendermint) 입니다. Tendermint 는 현존하는 BFT 합의 엔진 중 가장(그리고 유일하게) 성숙한 엔진입니다. 업계 전반에서 널리 사용되며 지분증명 시스템 구축에 최적 표준의 합의 엔진으로 여겨집니다.
 - SDK 는 오픈소스이며 컴포저블 [모듈](../../x/) 로 쉽게 블록체인을 구축할 수 있도록 설계되었습니다. 오픈소스 모듈 생태계가 성장함에 따라, 이를 통해 복잡한 분산형 플랫폼을 구축하는것이 점점 더 쉬워질 것입니다.
-- SDK 는 자격기반 보안에서 영감을 받았으며, 수년간 블록체인 상태 머신과의 씨름을 통해 얻은 정보입니다. 따라서 Cosmos SDK 는 블록체인을 구축하기에 매우 안정적인 환경입니다.
+- SDK 는 자격기반 보안에서 영감을 받았으며, 수년간 블록체인 상태 기계와의 씨름을 통해 얻은 정보입니다. 따라서 Cosmos SDK 는 블록체인을 구축하기에 매우 안정적인 환경입니다.
 - 가장 중요한 것은, Cosmos SDK 는 이미 개발 중인 많은 애플리케이션별 전용 블록체인들을 구축하는데에 사용되고 있습니다. [Cosmos Hub](https://hub.cosmos.network), [IRIS Hub](https://irisnet.org), [Binance Chain](https://docs.binance.org/), [Terra](https://terra.money/) or [Kava](https://www.kava.io/) 등을 예로 들 수 있습니다. 이외에도 [더 많은 곳](https://cosmos.network/ecosystem) 에서 Cosmos SDK 를 기반으로 구축되고 있습니다.
 
 ## Cosmos SDK 시작하기
