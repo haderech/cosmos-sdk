@@ -2,13 +2,13 @@
 order: 2
 -->
 
-# Application-Specific Blockchains
+# 애플리케이션별 전용 블록체인
 
-This document explains what application-specific blockchains are, and why developers would want to build one as opposed to writing Smart Contracts. {synopsis}
+이 문서에서는 애플리케이션별 전용 블록체인이 무엇이며, 개발자가 스마트 컨트랙트를 작성하는 대신 블록체인을 구축하려는 이유를 설명합니다. {개요}
 
-## What are application-specific blockchains?
+## 애플리케이션별 전용 블록체인이란?
 
-Application-specific blockchains are blockchains customized to operate a single application. Instead of building a decentralised application on top of an underlying blockchain like Ethereum, developers build their own blockchain from the ground up. This means building a full-node client, a light-client, and all the necessary interfaces (CLI, REST, ...) to interract with the nodes.
+애플리케이션별 전용 블록체인은 단일 애플리케이션을 운영하도록 커스터마이즈된 블록체인입니다. 개발자들은 이더리움 같은 기반 블록체인 위에 분산 애플리케이션을 구축하는 대신 처음부터 자체 블록체인을 구축합니다. 즉, 풀 노드 클라이언트, 라이트 클라이언트 및 노드와 상호 작용하는 데 필요한 모든 인터페이스(CLI, REST 등)를 구축합니다.
 
 ```
                 ^  +-------------------------------+  ^
@@ -26,56 +26,56 @@ Blockchain node |  |           Consensus           |  |
                 v  +-------------------------------+  v
 ```
 
-## What are the shortcomings of Smart Contracts?
+## 스마트 컨트랙트의 단점은?
 
-Virtual-machine blockchains like Ethereum addressed the demand for more programmability back in 2014. At the time, the options available for building decentralised applications were quite limited. Most developers would build on top of the complex and limited Bitcoin scripting language, or fork the Bitcoin codebase which was hard to work with and customize.
+2014년 무렵 이더리움과 같은 가상머신 블록체인은 프로그래밍 가능성에 대한 많은 요구를 충족시켰습니다. 당시에는 분산형 애플리케이션을 구축하는 데 사용할 수 있는 옵션이 상당히 제한적이었습니다. 대부분의 개발자들은 작업과 커스터마이징이 어려운 복잡하고 제한된 비트코인 스크립트 언어나 포크된 코드 기반으로 애플리케이션을 구축했습니다.
 
-Virtual-machine blockchains came in with a new value proposition. Their state-machine incorporates a virtual-machine that is able to interpret turing-complete programs called Smart Contracts. These Smart Contracts are very good for use cases like one-time events (e.g. ICOs), but they can fall short for building complex decentralised platforms. Here is why:
+가상머신 블록체인은 새로운 가치를 제시하였습니다. 가상머신 블록체인은 상태-기계로서 스마트 컨트랙트라는 튜링 완전한 프로그램을 해석할 수 있는 가상머신을 포함하고 있습니다. 이러한 스마트 컨트랙트는 일회성 이벤트(예: ICO)와 같은 사용 사례에는 매우 적합할 수 있지만, 복잡한 분산형 플랫폼을 구축하는 데는 부족할 수 있습니다. 그 이유는 다음과 같습니다. 
 
-- Smart Contracts are generally developed with specific programming languages that can be interpreted by the underlying virtual-machine. These programming languages are often immature and inherently limited by the constraints of the virtual-machine itself. For example, the Ethereum Virtual Machine does not allow developers to implement automatic execution of code. Developers are also limited to the account-based system of the EVM, and they can only choose from a limited set of functions for their cryptographic operations. These are examples, but they hint at the lack of **flexibility** that a smart contract environment often entails.
-- Smart Contracts are all run by the same virtual machine. This means that they compete for resources, which can severly restrain **performance**. And even if the state-machine were to be split in multiple subsets (e.g. via sharding), Smart Contracts would still need to be interpeted by a virtual machine, which would limit performance compared to a native application implemented at state-machine level (our benchmarks show an improvement on the order of x10 in performance when the virtual-machine is removed).
-- Another issue with the fact that Smart Contracts share the same underlying environment is the resulting limitation in **sovereignty**. A decentralised application is an ecosystem that involves multiple players. If the application is built on a general-purpose virtual-machine blockchain, stakeholders have very limited sovereignty over their application, and are ultimately superseded by the governance of the underlying blockchain. If there is a bug in the application, very little can be done about it.
+- 스마트 컨트랙트는 일반적으로 가상머신에서 해석할 수 있는 특정 프로그래밍 언어로 개발됩니다. 이러한 프로그래밍 언어는 미숙한 경우가 많고 기본적으로 가상머신 자체의 제약에 의해 제한됩니다. 예를 들어, 이더리움 가상머신에서는 개발자가 코드를 자동으로 실행할 수 없습니다. 개발자는 또한 EVM의 계정 기반 시스템으로 제한되며, 암호화 작업을 위해 제한된 기능 집합에서만 선택할 수 있습니다. 이러한 예들은 스마트 컨트랙트 환경에 수반되는 **유연성**이 부족하다는 것을 암시합니다.
+- 스마트 컨트랙트는 모두 동일한 가상 시스템에서 실행됩니다. 이는 스마트 컨트랙트들이 **성능**을 크게 제약할 수 있는 리소스를 두고 경쟁한다는 것을 의미합니다. 또한 상태-기계를 여러 하위 집단(예: 샤딩)으로 분할하더라도 가상 머신에 의해 스마트 컨트랙트가 해석되기 때문에, 상태-기계 레벨에서 구현되는 네이티브 애플리케이션에 비해 성능이 제한됩니다.(가상 머신을 제거하였을 때 10배의 성능 향상을 보였습니다.) 
+- 스마트 컨트랙트가 동일한 환경을 공유한다는 사실과 관련된 또 다른 문제는 **자주권**의 제한입니다. 분산형 애플리케이션은 여러 참여자가 참여하는 에코시스템입니다. 애플리케이션이 범용 가상머신 블록체인을 기반으로 구축되는 경우 이해당사자들은 애플리케이션에 대한 자주권이 매우 제한적이며, 결국 기반 블록체인의 거버넌스에 의해 대체됩니다. 만일 애플리케이션에 버그가 있더라도 조치를 취할 방법이 거의 전무합니다.
 
-Application-Specific Blockchains are designed to address these shortcomings.
+애플리케이션별 전용 블록체인은 이러한 단점을 해결할 수 있게 설계되었습니다.
 
-## Application-Specific Blockchains Benefits
+## 애플리케이션별 전용 블록체인의 장점
 
-### Flexibility
+### 유연성
 
-Application-specific blockchains give maximum flexibility to developers:
+애플리케이션별 블록체인은 개발자에게 최고의 유연성을 제공합니다:
 
-- In Cosmos blockchains, the state-machine is typically connected to the underlying consensus engine via an interface called the [ABCI](https://docs.tendermint.com/v0.34/spec/abci/). This interface can be wrapped in any programming language, meaning developers can build their state-machine in the programming language of their choice.
+- 코스모스 블록체인에서, 상태-기계는 일반적으로 [ABCI](https://docs.tendermint.com/v0.34/spec/abci/) 라는 인터페이스를 통해 컨센서스 엔진에 연결됩니다.
 
-- Developers can choose among multiple frameworks to build their state-machine. The most widely used today is the Cosmos SDK, but others exist (e.g. [Lotion](https://github.com/nomic-io/lotion), [Weave](https://github.com/iov-one/weave), ...). The choice will most of the time be done based on the programming language they want to use (Cosmos SDK and Weave are in Golang, Lotion is in Javascript, ...).
-- The ABCI also allows developers to swap the consensus engine of their application-specific blockchain. Today, only Tendermint is production-ready, but in the future other consensus engines are expected to emerge.
-- Even when they settle for a framework and consensus engine, developers still have the freedom to tweak them if they don't perfectly match their requirements in their pristine forms.
-- Developers are free to explore the full spectrum of tradeoffs (e.g. number of validators vs transaction throughput, safety vs availability in asynchrony, ...) and design choices (DB or IAVL tree for storage, UTXO or account model, ...).
-- Developers can implement automatic execution of code. In the Cosmos SDK, logic can be automatically triggered at the beginning and the end of each block. They are also free to choose the cryptographic library used in their application, as opposed to being constrained by what is made available by the underlying environment in the case of virtual-machine blockchains.
+- 개발자는 여러 프레임워크 중에서 선택하여 상태-기계를 구축할 수 있습니다. 오늘날 가장 널리 사용되는 것은 Cosmos SDK이지만 다른 것들도 존재합니다(예: [Lotion](https://github.com/nomic-io/lotion), [Weave](https://github.com/iov-one/weave),...). 대부분의 경우 사용하고자 하는 프로그래밍 언어에 따라 선택합니다(Cosmos SDK 및 Weve는 Golang, Lotion은 Javascript, ...).
+- 또한, 개발자는 ABCI를 통해 애플리케이션별 전용 블록체인의 컨센서스 엔진을 교체할 수 있습니다. 현재는 Tendermint만 프로덕션에서 사용할 수 있지만, 앞으로는 다른 컨센서스 엔진도 등장할 것으로 예상됩니다.
+- 프레임워크와 컨센서스 엔진이 고착화되고, 개발자의 요구사항에 완전하게 부합하지 않을 경우 이를 개발자가 자유롭게 수정할 수 있습니다.
+- 개발자는 트레이드 오프인 가치 선택(예: 검증자 수 vs 트랜잭션 처리량, 비동기식 안전성 vs 가용성 등) 및 설계 선택(스토리지, UTXO 또는 계정 모델용 DB 또는 IAVL 트리 등)을 자유롭게 고려할 수 있습니다.
+- 개발자는 코드 자동 실행을 구현할 수 있습니다. Cosmos SDK에서는 각 블록의 시작과 끝 부분에서 로직을 자동으로 트리거할 수 있습니다. 또한 애플리케이션에 사용되는 암호화 라이브러리를 자유롭게 선택할 수 있습니다. 가상머신 블록체인 환경에서 사용할 암호화 라이브러리를 선택할 수 있습니다.
 
-The list above contains a few examples that show how much flexibility application-specific blockchains give to developers. The goal of Cosmos and the Cosmos SDK is to make developer tooling as generic and composable as possible, so that each part of the stack can be forked, tweaked and improved without losing compatibility. As the community grows, more alternatives for each of the core building blocks will emerge, giving more options to developers.
+위 목록은 애플리케이션별 전용 블록체인이 개발자에게 제공하는 유연성이 어느 정도인지를 보여 주는 몇 가지 예시입니다. Cosmos와 Cosmos SDK의 목표는 호환성을 잃지 않으면서 스택의 각 부분을 포크, 조정 및 개선할 수 있도록 개발자 툴링을 최대한 일반적이면서, 합성 가능하게 하는 것입니다. 커뮤니티가 성장함에 따라 각 핵심 구성 요소에 대한 더 많은 대안이 등장하여 개발자에게 더 많은 옵션을 제공할 것입니다.
 
-### Performance
+### 성능
 
-Decentralised applications built with Smart Contracts are inherently capped in performance by the underlying environment. For a decentralised application to optimise performance, it needs to be built as an application-specific blockchains. Next are some of the benefits an application-specific blockchain brings in terms of performance:
+스마트 컨트랙트로 구축된 분산형 애플리케이션은 기본적으로 환경의 성능 제한을 받습니다. 분산 애플리케이션이 성능을 최적화하려면 애플리케이션별 전용 블록체인으로 구축되어야 합니다. 다음은 애플리케이션별 전용 블록체인이 성능과 관련하여 제공하는 몇 가지 이점입니다.
 
-- Developers of application-specific blockchains can choose to operate with a novel consensus engine such as Tendermint BFT. Compared to Proof-of-Work (used by most virtual-machine blockchains today), it offers significant gains in throughput.
-- An application-specific blockchain only operates a single application, so that the application does not compete with others for computation and storage. This is the opposite of most non-sharded virtual-machine blockchains today, where smart contracts all compete for computation and storage.
-- Even if a virtual-machine blockchain offered application-based sharding coupled with an efficient consensus algorithm, performance would still be limited by the virtual-machine itself. The real throughput bottleneck is the state-machine, and requiring transactions to be interpreted by a virtual-machine significantly increases the computational complexity of processing them.
+- 애플리케이션별 전용 블록체인 개발자는 Tendermint BFT와 같은 새로운 컨센서스 엔진으로 운영할 수 있습니다. 작업증명(오늘날의 대부분의 가상머신 블록체인에 사용됨)과 비교하여 처리량이 크게 향상됩니다.
+- 애플리케이션별 전용 블록체인은 단일 애플리케이션만 운영하므로 컴퓨팅 및 스토리지 분야에서 다른 애플리케이션과 경쟁하지 않습니다. 이는 오늘날 스마트 컨트랙트가 컴퓨팅 및 스토리지를 놓고 경쟁하는 대부분의 비-샤드 가상머신 블록체인과는 반대입니다.
+- 가상머신 블록체인이 효율적인 합의 알고리즘과 결합된 애플리케이션 기반 샤딩을 제공하더라도 성능은 여전히 가상머신에 의해 제한됩니다. 실제 처리의 병목은 상태-기계이며, 가상머신에서 트랜잭션을 해석해야 하는 경우 프로세싱의 컴퓨팅 복잡성이 크게 증가합니다.
 
-### Security
+### 보안
 
-Security is hard to quantify, and greatly varies from platform to platform. That said here are some important benefits an application-specific blockchain can bring in terms of security:
+보안은 정량화하기 어렵고 플랫폼마다 크게 다릅니다. 애플리케이션별 전용 블록체인이 보안 측면에서 얻을 수 있는 몇 가지 중요한 이점은 다음과 같습니다:
 
-- Developers can choose proven programming languages like Golang when building their application-specific blockchains, as opposed to smart contract programming languages that are often more immature.
-- Developers are not constrained by the cryptographic functions made available by the underlying virtual-machines. They can use their own custom cryptography, and rely on well-audited crypto libraries.
-- Developers do not have to worry about potential bugs or exploitable mechanisms in the underlying virtual-machine, making it easier to reason about the security of the application.
+- 개발자는 애플리케이션별 전용 블록체인을 구축할 때 Golang과 같이 검증된 프로그래밍 언어를 선택할 수 있습니다. 이러한 언어는 미숙한 스마트 컨트랙트 프로그래밍 언어가 아닙니다.
+- 개발자는 가상머신에서 사용할 수 있는 암호화 기능의 제약을 받지 않습니다. 또한 고유한 커스텀 암호화 기능을 사용할 수 있으며, 검증된 암호화 라이브러리에 의존할 수 있습니다.
+- 개발자는 가상머신에서 발생할 수 있는 버그나 악용 가능한 메커니즘에 대해 걱정할 필요가 없으므로 애플리케이션의 보안 안전성을 더 쉽게 판단할 수 있습니다.
 
-### Sovereignty
+### 자주권
 
-One of the major benefits of application-specific blockchains is sovereignty. A decentralised application is an ecosystem that involves many actors: users, developers, third-party services, and more.  When developers build on virtual-machine blockchain where many decentralised applications coexist, the community of the application is different than the community of the underlying blockchain, and the latter supersedes the former in the governance process. If there is a bug or if a new feature is needed, stakeholders of the application have very little leeway to upgrade the code. If the community of the underlying blockchain refuses to act, nothing can happen.
+애플리케이션별 전용 블록체인의 주요 이점 중 하나는 자주권입니다. 분산형 애플리케이션은 사용자, 개발자, 타사 서비스 등과 같은 많은 참여자들이 참여하는 에코시스템입니다. 개발자가 분산된 많은 애플리케이션이 공존하는 가상머신 블록체인을 구축하였을 때, 애플리케이션의 커뮤니티는 블록체인의 커뮤니티와 다르며 거버넌스 프로세스에 의해 블록체인 커뮤니티가 애플리케이션 커뮤니티를 대체합니다. 버그가 있거나 새로운 기능이 필요한 경우 애플리케이션의 이해당사자들은 코드를 업그레이드할 수 있는 여지가 거의 없습니다. 블록체인 커뮤니티가 조치를 거부하면 아무 것도 할 수 없습니다.
 
-The fundamental issue here is that the governance of the application and the governance of the network are not aligned. This issue is solved by application-specific blockchains. Because application-specific blockchains specialize to operate a single application, stakeholders the application has full control over the entire chain. This ensures the community will not be stuck if a bug is discovered, and that it has the entire freedom to choose how it is going to evolve.
+여기서 근본적인 문제는 애플리케이션의 거버넌스와 네트워크의 거버넌스가 일치하지 않는다는 것입니다. 이 문제는 애플리케이션별 전용 블록체인을 통해 해결되었습니다. 애플리케이션별 전용 블록체인은 단일 애플리케이션 운영에 특화되어 있기 때문에, 애플리케이션 관계자들은 전체 체인을 완벽하게 제어합니다. 이를 통해 버그가 발견되어도 커뮤니티가 고착되지 않으며, 버그를 어떻게 처리할 것인지 자유롭게 선택할 수 있습니다.
 
-## Next {hide}
+## 다음 {숨기기}
 
-Learn more about the [high-level architecture](./sdk-app-architecture.md) of an SDK application {hide}
+SDK 애플리케이션의 [고급 아키텍처](.sdk-app-architecture.md)에 대해 자세히 알아보십시오. {숨기기}
