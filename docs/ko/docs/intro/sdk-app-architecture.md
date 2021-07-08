@@ -40,21 +40,21 @@ Cosmos SDK 덕분에, 개발자들은 단지 스테이트 머신만 정의하면
 
 ```
                 ^  +-------------------------------+  ^
-                |  |                               |  |   Built with Cosmos SDK
-                |  |  State-machine = Application  |  |
+                |  |                               |  |  Cosmos SDK로 빌드
+                |  |       상태 기계 = 애플리케이션ㅤㅤㅤㅤ|  |
                 |  |                               |  v
                 |  +-------------------------------+
                 |  |                               |  ^
-Blockchain node |  |           Consensus           |  |
+    블록체인 노드 ㅤ|  |         합의(consensus)ㅤㅤㅤㅤㅤ |  |
                 |  |                               |  |
-                |  +-------------------------------+  |   Tendermint Core
+                |  +-------------------------------+  |  Tendermint 코어
                 |  |                               |  |
-                |  |           Networking          |  |
+                |  |             네트워크        ㅤㅤㅤ|  |
                 |  |                               |  |
                 v  +-------------------------------+  v
 ```
 
-[Tendermint](https://tendermint.com/docs/introduction/what-is-tendermint.html) 는 애플리케이션-애그노스틱(Application-agnostic) 엔진으로써 블록체인의 *networking* 및 *consensus* 레이어를 처리하는것을 책임집니다. 즉, Tendermint 는 트랜잭션 바이트의 전송 및 바이트 순서 정렬(ordering)을 담당한다는 뜻입니다. Tendermint Core 는 동명의 비잔틴 장애 허용(Byzantine-Fault-Tolerant, BFT) 알고리즘을 사용하여 트랜잭션 순서 합의에 도달합니다.
+[Tendermint](https://tendermint.com/docs/introduction/what-is-tendermint.html) 는 애플리케이션-애그노스틱(Application-agnostic) 엔진으로써 블록체인의 *네트워크* 및 *합의* 레이어를 처리하는것을 책임집니다. 즉, Tendermint 는 트랜잭션 바이트의 전송 및 바이트 순서 정렬(ordering)을 담당한다는 뜻입니다. Tendermint Core 는 동명의 비잔틴 장애 허용(Byzantine-Fault-Tolerant, BFT) 알고리즘을 사용하여 트랜잭션 순서 합의에 도달합니다.
 
 Tendermint [합의 알고리즘](https://docs.tendermint.com/v0.34/introduction/what-is-tendermint.html#consensus-overview) 은 *Validator* 라는 특수한 노드들의 세트와 함께 작동합니다. Validator 는 트랜잭션 블록들을 블록체인에 추가하는 역할을 합니다. 어떤 블록이라도 Validator 세트 V 가 있습니다. V 의 Validator 중 하나가 알고리즘에 의해 다음 제안자(proposer) 로 선택됩니다. V 의 Validator 3분의 2 이상이 *[prevote](https://docs.tendermint.com/v0.34/spec/consensus/consensus.html#prevote-step-height-h-round-r)* 와 *[precommit](https://docs.tendermint.com/v0.34/spec/consensus/consensus.html#precommit-step-height-h-round-r)* 에 서명하고, 포함된 모든 트랜잭션이 유효한 경우 이 블록도 유효한 것으로 간주됩니다. Validator 세트는 상태 기계 내에 작성된 규칙에 따라서 바뀔 수 있습니다. 
 
