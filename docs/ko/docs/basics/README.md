@@ -6,12 +6,12 @@ parent:
 
 # Basics
 
-This repository contains reference documentation on the basic concepts of the Cosmos SDK.
+여기는 Cosmos SDK 의 기본 개념에 대한 참고 문서를 포함하고 있습니다.
 
-1. [Anatomy of an SDK Application](./app-anatomy.md)
-2. [Lifecycle of a transaction](./tx-lifecycle.md)
-3. [Lifecycle of a query](./query-lifecycle.md)
-4. [Accounts](./accounts.md)
-5. [Gas and Fees](./gas-fees.md)
+1. [SDK 애플리케이션 해부](./app-anatomy.md)
+2. [트랜잭션의 생명주기](./tx-lifecycle.md)
+3. [쿼리의 생명주기](./query-lifecycle.md)
+4. [계정](./accounts.md)
+5. [가스와 비용](./gas-fees.md)
 
-After reading the basics, head on to the [Core Reference](../core/README.md) for more advanced material.
+basics 를 읽고 난 뒤에, [Core](../core/README.md) 에서 심화 내용을 알아보세요.
