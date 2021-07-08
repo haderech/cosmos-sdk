@@ -88,7 +88,7 @@ Tendermint 는 [ABCI](https://docs.tendermint.com/v0.34/spec/abci/) 라는 인�
 - `DeliverTx`: Tendermint Core 에서 [유효한 블록](https://docs.tendermint.com/v0.34/spec/blockchain/blockchain.html#validation) 을 수신하면, 블록의 각 트랜잭션은 처리를 위해 `DeliverTx` 를 통해서 애플리케이션으로 전달됩니다. 이 단계에서 상태 변경이 발생합니다. `AnteHandler` 는 트랜잭션의 각 메시지를 위한 실제 [`Msg` service](../building-modules/msg-services.md) RPC 와 함께 다시 실행됩니다.
 - `BeginBlock`/`EndBlock`: 이 메시지들은 블록내 트랜잭션 포함여부와 관계없이 각 블록의 시작과 끝에서 실행됩니다. 이는 로직의 자동실행을 트리거하기에 유용합니다. 하지만 컴퓨팅 비용이 비싼 루프로 인해 블록체인이 느려질 수도 있고, 무한 루프라면 심지어 멈출 수도 있으므로 주의해야 합니다. 
 
-ABCI 매서드에 대해 더 자세한 내용은 [Tendermint docs](https://docs.tendermint.com/v0.34/spec/abci/abci.html#overview) 에서 찾을 수 있습니다.
+ABCI 메서드에 대해 더 자세한 내용은 [Tendermint docs](https://docs.tendermint.com/v0.34/spec/abci/abci.html#overview) 에서 찾을 수 있습니다.
 
 Tendermint 를 기반으로 하는 모든 애플리케이션은 레이어 하부의 로컬 Tendermint 엔진과 상호작용을 하기위해 ABCI 인터페이스를 구현해야 하지만, 다행히 이를 직접하지 않아도 됩니다. Cosmos SDK 가 [baseapp](./sdk-design.md#baseapp) 형태로 보일러플레이트 구현을 제공합니다. 
 
