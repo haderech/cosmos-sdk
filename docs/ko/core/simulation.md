@@ -2,68 +2,50 @@
 order: 13
 -->
 
-# Cosmos Blockchain Simulator
+# 코스모스 블록체인 시뮬레이터
 
-The Cosmos SDK offers a full fledged simulation framework to fuzz test every
-message defined by a module.
+Cosmos SDK는 시뮬레이션 프레임워크를 제공하며 이를 통하여 모듈에서 사용하는 모든 메시지를 테스트 할 수 있습니다.
 
-On the SDK, this functionality is provided by the[`SimApp`](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/simapp/app.go), which is a
-`Baseapp` application that is used for running the [`simulation`](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/x/simulation) module.
-This module defines all the simulation logic as well as the operations for
-randomized parameters like accounts, balances etc.
+SDK에서 이 기능은 [`simulation`](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/x/simulation) 모듈 안에 포함되어 있고 
+[`SimApp`](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/simapp/app.go) 이라는 `Baseapp` 애플리케이션을 실행시키면 확인 할 수 있습니다.
+이 모듈은 시뮬레이션 로직을 정의하며 계정이나 잔고를 임의로 설정하는 기능도 포함하고 있습니다.
 
-## Goals
+## 목표
 
-The blockchain simulator tests how the blockchain application would behave under
-real life circumstances by generating and sending randomized messages.
-The goal of this is to detect and debug failures that could halt a live chain,
-by providing logs and statistics about the operations run by the simulator as
-well as exporting the latest application state when a failure was found.
+블록체인 시뮬레이터는 애플리케이션이 실제 상황에서 어떻게 작동하는지 테스트 하기 위하여 무작위로 메시지를 생성하고 보냅니다.
+시뮬레이션의 목표는 로그 분석과 애플리케이션 상태 변화를 모니터하여 블록체인을 멈출수 있는 심각한 오류를 찾고 문제를 찾았을 경우 디버그하는 것입니다.
 
-Its main difference with integration testing is that the simulator app allows
-you to pass parameters to customize the chain that's being simulated.
-This comes in handy when trying to reproduce bugs that were generated in the
-provided operations (randomized or not).
+통합테스트와의 주요 차이점은 시뮬레이터를 사용하면 시뮬레이션 하는 블록체인에 대한 매개 변수를 전달할 수 있다는 것입니다. 
+이것은 문제가 발견된 버그를 재현하려고 할 때 유용하게 사용할 수 있습니다.
 
-## Simulation commands
+## 시뮬레이션 명령어
 
-The simulation app has different commands, each of which tests a different
-failure type:
+시뮬레이터는 다양한 시나리오를 테스트 할 수 있는 명령어가 있습니다.
 
-- `AppImportExport`: The simulator exports the initial app state and then it
-  creates a new app with the exported `genesis.json` as an input, checking for
-  inconsistencies between the stores.
-- `AppSimulationAfterImport`: Queues two simulations together. The first one provides the app state (_i.e_ genesis) to the second. Useful to test software upgrades or hard-forks from a live chain.
-- `AppStateDeterminism`: Checks that all the nodes return the same values, in the same order.
-- `BenchmarkInvariants`: Analysis of the performance of running all modules' invariants (_i.e_ sequentially runs a [benchmark](https://golang.org/pkg/testing/#hdr-Benchmarks) test). An invariant checks for
-  differences between the values that are on the store and the passive tracker. Eg: total coins held by accounts vs total supply tracker.
-- `FullAppSimulation`: General simulation mode. Runs the chain and the specified operations for a given number of blocks. Tests that there're no `panics` on the simulation. It does also run invariant checks on every `Period` but they are not benchmarked.
+- `AppImportExport` : 시뮬레이터는 초기 앱 상태를 내보내고 새로운 앱을 생성하여 전에 내보내기 한 `genesis.json`을 읽어오며 저장할 때 발생할 수 있는 문제를 확인 할 수 있습니다.
+- `AppSimulationAfterImport` : 두개의 시뮬레이션을 연속으로 실행하여 첫번째 시뮬레이션이 `genesis.json`을 생성하고 두번째 시뮬레이션이 그 앱 상태를 읽어들이도록 할 수 있습니다. 이를 통하여 소프트웨어를 업그레이드나 블록체인 하드포크가 일어나는 상황을 테스트 할 수 있습니다.
+- `AppStateDeterminism` : 모든 노드가 같은 값을 같은 순서대로 반환하는지 확인 할 수 있습니다.
+- `BenchmarkInvariants` : 모든 모듈의 불변성에 대한 분석을 할 수 있습니다. (예를 들어 순차적으로 여러 [벤치마크](https://golang.org/pkg/testing/#hdr-Benchmarks) 테스트를 실행할 수 있습니다) 불변성 검증은 특정값이 변경하지 않도록 고정시켜 놓고 다른 값들을 변화시키며 그 차이를 검증하는 것입니다. 예를 들어 한 계정이 보유중인 총 코인수와 전체 공급되어 있는 코인수
+- `FullAppSimulation` : 기본 시뮬레이션 모드입니다. 블록체인을 실행시키고 특정 블록에 대하여 여러 오퍼레이션을 적용시킬수 있습니다. `panic`발생 여부를 테스트 할 수 있고 벤치마크는 어렵겠지만 `period`마다 불변성 검증을 할 수 있습니다.
 
-Each simulation must receive a set of inputs (_i.e_ flags) such as the number of
-blocks that the simulation is run, seed, block size, etc.
-Check the full list of flags [here](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/simapp/config.go#L32-L55).
+각 시뮬레이션은 블록의 수, 시드, 블록 사이즈와 같은 일련의 입력(예: flags)을 받아야 합니다.
+flag의 리스트는 [여기](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/simapp/config.go#L32-L55) 에서 확인이 가능합니다.
 
-## Simulator Modes
+## 시뮬레이션 모드
 
-In addition to the various inputs and commands, the simulator runs in three modes:
+다양한 입력값과 명령어 외에 시뮬레이터는 3가지 모드로 실행가능 합니다.
 
-1. Completely random where the initial state, module parameters and simulation
-   parameters are **pseudo-randomly generated**.
-2. From a `genesis.json` file where the initial state and the module parameters are defined.
-   This mode is helpful for running simulations on a known state such as a live network export where a new (mostly likely breaking) version of the application needs to be tested.
-3. From a `params.json` file where the initial state is pseudo-randomly generated but the module and simulation parameters can be provided manually.
-   This allows for a more controlled and deterministic simulation setup while allowing the state space to still be pseudo-randomly simulated.
-   The list of available parameters are listed [here](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/x/simulation/params.go#L44-L52).
+1. 초기 상태, 모듈과 시뮬레이션의 입력값 등을 완전히 무작위(**pseudo-randomly**)로 생성합니다.
+2. `genesis.json` 파일을 읽어 초기 상태와 모듈 입력값을 설정할 수 있습니다. 이 모드는 이미 실행되고 있는 블록체인에서 내보내기를 실행하여 그 상태에서 부터 시뮬레이션을 실행하기에 유용합니다.
+3. `params.json` 파일을 읽어 모듈과 시뮬레이션 입력값을 설정할 수 있습니다. 이때 초기 상태는 무작위로 생성 됩니다. 이 모드를 사용하면 비록 초기 상태는 무작위로 생성이 될지라도 좀 더 통제된 시뮬레이션 환경구성이 가능합니다. 설정 가능한 리스트는 [여기](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/x/simulation/params.go#L44-L52) 에서 확인 가능합니다.
 
-::: tip
-These modes are not mutually exclusive. So you can for example run a randomly
-generated genesis state (`1`) with manually generated simulation params (`3`).
+::: 팁)
+이 모드들은 상호 배타적이지 않습니다. 예를 들어 무작위로 초기 상태를 설정한 후(`1`모드) 수동으로 시뮬레이션 입력값을 생성(`3`모드)해도 무방합니다.
 :::
 
-## Usage
+## 사용방법
 
-This is a general example of how simulations are run. For more specific examples
-check the SDK [Makefile](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/Makefile#L251-L287).
+다음은 일반적으로 시뮬레이션이 실행되는 예제입니다. 더 구체적인 예제를 찾으신다면 SDK [Makefile](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/Makefile#L251-L287) 을 확인하세요.
 
 ```bash
  $ go test -mod=readonly github.com/cosmos/cosmos-sdk/simapp \
@@ -72,30 +54,23 @@ check the SDK [Makefile](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/Makef
   -v -timeout 24h
 ```
 
-## Debugging Tips
+## 디버그 팁들
 
-Here are some suggestions when encountering a simulation failure:
+다음은 시뮬레이션이 실패 할 때 어떻게 대처해야 할지에 대한 가이드입니다:
 
-- Export the app state at the height were the failure was found. You can do this
-  by passing the `-ExportStatePath` flag to the simulator.
-- Use `-Verbose` logs. They could give you a better hint on all the operations
-  involved.
-- Reduce the simulation `-Period`. This will run the invariants checks more
-  frequently.
-- Print all the failed invariants at once with `-PrintAllInvariants`.
-- Try using another `-Seed`. If it can reproduce the same error and if it fails
-  sooner you will spend less time running the simulations.
-- Reduce the `-NumBlocks` . How's the app state at the height previous to the
-  failure?
-- Run invariants on every operation with `-SimulateEveryOperation`. _Note_: this
-  will slow down your simulation **a lot**.
-- Try adding logs to operations that are not logged. You will have to define a
-  [Logger](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/x/staking/keeper/keeper.go#L66-L69) on your `Keeper`.
+- 시뮬레이터에 `-ExportStatePath` flag을 전달하여 실패한 height에서 앱 상태를 내보기 합니다. 
+- `-Verbose`을 사용하여 더 자세한 로그를 출력합니다.
+- 시뮬레이션의 주기를 줄여 봅니다(`-Period`). 그렇게 하면 불변성 검증이 좀 더 자주 발생합니다.
+- `-PrintAllInvariants`을 사용하여 모든 실패한 불변성을 출력해 봅니다.
+- 다른 씨드(`-Seed`)를 사용합니다. 만일 다른 씨드를 사용했을 때도 같은 문제가 발생하지만 시뮬레이션 실행이 감소했다면 반복되는 시뮬레이션에 소용되는 시간을 획기적으로 줄일 수 있습니다.
+- `-NumBlocks`을 줄여 봅니다. 문제가 발생했던 블록전에 앱 상태가 어땠는데 검증합니다.
+- `-SimulateEveryOperation`을 사용하여 모든 오퍼레이션에 대하여 불변성 검증을 실행합니다. _주의_: 이렇게 할 경우 시뮬레이션 실행이 **굉장히** 느려질 수 있습니다.
+- 오퍼레이션에 대하여 새로운 로그를 추가합니다. `Keeper`에 새롭게 [Logger](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0/x/staking/keeper/keeper.go#L66-L69) 가 정의되야 합니다.
 
-## Use simulation in your SDK-based application
+## SDK에 기반한 애플리케이션에서 시뮬레이션을 사용하세요
 
-Learn how you can integrate the simulation into your SDK-based application:
+SDK에 기반한 애플리케이션에 시뮬레이션을 통합하는 방법 알아보기:
 
-- Application Simulation Manager
-- [Building modules: Simulator](../building-modules/simulator.md)
-- Simulator tests
+- 애플리케이션 시뮬레이션 관리자
+- [모듈 개발: 시뮬레이션](../building-modules/simulator.md)
+- 시뮬레이터 테스트
