@@ -153,4 +153,4 @@ Cosmos SDK 의 공개키는 `cryptotypes.PubKey` 인터페이스로 정의됩니
 
 ## Next {hide}
 
-[가스와 비용](./gas-fees.md) 에 대해서 알아보세요.
+[가스와 비용](gas-fees.md) 에 대해서 알아보세요.

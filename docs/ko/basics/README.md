@@ -11,7 +11,7 @@ parent:
 1. [SDK 애플리케이션 해부](./app-anatomy.md)
 2. [트랜잭션의 생명주기](./tx-lifecycle.md)
 3. [쿼리의 생명주기](./query-lifecycle.md)
-4. [계정](./accounts.md)
-5. [가스와 비용](./gas-fees.md)
+4. [계정](accounts.md)
+5. [가스와 비용](gas-fees.md)
 
 basics 를 읽고 난 뒤에, [Core](../core/README.md) 에서 심화 내용을 알아보세요.
