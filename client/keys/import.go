@@ -8,6 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/input"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 )
 
 // ImportKeyCommand imports private keys from a keyfile.
@@ -35,6 +36,23 @@ func ImportKeyCommand() *cobra.Command {
 			}
 
 			return clientCtx.Keyring.ImportPrivKey(args[0], string(bz), passphrase)
+		},
+	}
+}
+
+// UnsafeImportKeyCommand imports a private key from a keyfile.
+func UnsafeImportKeyCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   "import-unsafe <name> <private_key> <algorithm>",
+		Short: "Import a private key into the local keybase",
+		Long:  "Import a private key represented in hex string.",
+		Args: cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+			return keyring.NewUnsafe(clientCtx.Keyring).UnsafeImportPrivKeyHex(args[0], args[1], args[2])
 		},
 	}
 }

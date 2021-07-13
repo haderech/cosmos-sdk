@@ -96,6 +96,7 @@ type Keyring interface {
 type UnsafeKeyring interface {
 	Keyring
 	UnsafeExporter
+	UnsafeImporter
 }
 
 // Signer is implemented by key stores that want to provide signing capabilities.
@@ -140,6 +141,13 @@ type Exporter interface {
 type UnsafeExporter interface {
 	// UnsafeExportPrivKeyHex returns a private key in unarmored hex format
 	UnsafeExportPrivKeyHex(uid string) (string, error)
+}
+
+// UnsafeImporter is implemented by key stores that support unsafe import
+// of private key
+type UnsafeImporter interface {
+	// UnsafeImportPrivKeyHex imports unarmored hex private key
+	UnsafeImportPrivKeyHex(uid, privkey, algo string) error
 }
 
 // Option overrides keyring configuration options.
@@ -844,6 +852,36 @@ func (ks unsafeKeystore) UnsafeExportPrivKeyHex(uid string) (privkey string, err
 	}
 
 	return hex.EncodeToString(priv.Bytes()), nil
+}
+
+// UnsafeImportPrivKeyHex imports a private key in unarmored hexadecimal format.
+func (ks unsafeKeystore) UnsafeImportPrivKeyHex(uid, privkey, algo string) error {
+	if _, err := ks.Key(uid); err == nil {
+		return fmt.Errorf("cannot overwrite key: %s", uid)
+	}
+
+	privKeyBytes, err := hex.DecodeString(privkey)
+	if err != nil {
+		return err
+	}
+
+	if algo == "secp256k1" && len(privKeyBytes) == 32 {
+		privKeyBytes = append(
+			[]byte{0xE1, 0xB0, 0xF7, 0x9B, 0x20}, // tendermint/PrivKeySecp256k1
+			privKeyBytes...)
+	}
+
+	privKey, err := legacy.PrivKeyFromBytes(privKeyBytes)
+	if err != nil {
+		return err
+	}
+
+	_, err = ks.writeLocalKey(uid, privKey, hd.PubKeyType(algo))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func addrHexKeyAsString(address sdk.Address) string {
