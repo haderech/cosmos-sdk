@@ -49,7 +49,7 @@ ctx.GasMeter().ConsumeGas(amount, "description")
 
 ### 블록 가스 미터
 
-`ctx.BlockGasMeter()` 는 블록당 가스 소비량을 추적하고, 일정 한계를 초과하지 않도록 하기위해 사용되는 가스 미터입니다. `BlockGasMeter` 는 [`BeginBlock`](../core/baseapp.md#beginblock) 이 호출될 때 마다 새 인스턴스가 만들어집니다. `BlockGasMeter` 는 유한하며, 각 블럭의 가스 한도는 애플리케이션의 합의 파라메터에서 정의됩니다. 기본적으로 Cosmos SDK 애플리케이션이 사용하는 기본 합의 파라메터는 Tendermint 가 제공합니다. 
+`ctx.BlockGasMeter()` 는 블록당 가스 소비량을 추적하고, 일정 한계를 초과하지 않도록 하기위해 사용되는 가스 미터입니다. `BlockGasMeter` 는 [`BeginBlock`](../core/baseapp.md#beginblock) 이 호출될 때 마다 새 인스턴스가 만들어집니다. `BlockGasMeter` 는 유한하며, 각 블럭의 가스 한도는 애플리케이션의 합의 매개 변수에서 정의됩니다. 기본적으로 Cosmos SDK 애플리케이션이 사용하는 기본 합의 매개 변수는 Tendermint 가 제공합니다. 
 
 +++ https://github.com/tendermint/tendermint/blob/v0.34.0-rc6/types/params.go#L34-L41
 
@@ -81,9 +81,9 @@ type AnteHandler func(ctx Context, tx Tx, simulate bool) (newCtx Context, result
   
 - 트랜잭션에 포함된 각 [`message`](../building-modules/messages-and-queries.md#messages) 의 서명을 검사합니다. 각 `message` 는 한명 혹은 여러 발신자에 의해 서명되어야 하며, 이 서명들은 반드시 `AnteHandler` 에 의해 검증되어야 합니다.
 
-- `CheckTx` 동안, 거래와 함께 제공되는 가스 가격이 로컬 `min-gas-prices` 보다 큰지 검사합니다.(리마인드하자면, 가스 가격은 다음의 등식으로 도출됩니다: `fees = gas * gas-prices`). `min-gas-prices` 는 각 풀노드의 로컬 파라메터이며, `CheckTx` 에서 최소 비용을 제공하지 않은 트랜잭션을 버릴 때 사용됩니다.
+- `CheckTx` 동안, 거래와 함께 제공되는 가스 가격이 로컬 `min-gas-prices` 보다 큰지 검사합니다.(리마인드하자면, 가스 가격은 다음의 등식으로 도출됩니다: `fees = gas * gas-prices`). `min-gas-prices` 는 각 풀노드의 로컬 매개 변수이며, `CheckTx` 에서 최소 비용을 제공하지 않은 트랜잭션을 버릴 때 사용됩니다.
 
-- 트랜잭션의 발신자가 비용을 감당할 수 있는 충분한 자금을 보유하고 있는지 검사합니다. 엔드유저가 트랜잭션을 생성하면, 그들은 반드시 다음 3개의 파라메터 중 2개를 알려줘야 합니다(세 번째는 암시적): `fees`, `gas` 그리고 `gas-prices`. 이는 발신자들이 그들의 트랜잭션 실행을 실행하는 노드들을 위해 얼마만큼을 지불할 용의가 있는지 알려줍니다. 제공된 `gas` 값은 `GasWanted` 라는 파라메터로 저장되고 나중에 사용됩니다.
+- 트랜잭션의 발신자가 비용을 감당할 수 있는 충분한 자금을 보유하고 있는지 검사합니다. 엔드유저가 트랜잭션을 생성하면, 그들은 반드시 다음 3개의 매개 변수 중 2개를 알려줘야 합니다(세 번째는 암시적): `fees`, `gas` 그리고 `gas-prices`. 이는 발신자들이 그들의 트랜잭션 실행을 실행하는 노드들을 위해 얼마만큼을 지불할 용의가 있는지 알려줍니다. 제공된 `gas` 값은 `GasWanted` 라는 매개 변수로 저장되고 나중에 사용됩니다.
 
 - `newCtx.gasMeter` 를 0으로 설정하고 ,`GasWanted` 를 한도로 둡니다. __이 단계는 매우 중요한데,__ 트랜잭션이 가스를 무한으로 소비하지 못하도록 할 뿐만 아니라, `ctx.GasMeter` 가 각 `DeliverTx` 사이에서 재설정 되도록 합니다.(`ctx` 는 `Antehandler` 가 실행된 후 `newCtx` 로 설정되며, `AnteHandler` 는 `DeliverTx` 가 호출될 때 마다 수행됩니다.)
 
