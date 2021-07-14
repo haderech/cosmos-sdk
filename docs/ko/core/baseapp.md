@@ -4,7 +4,7 @@ order: 1
 
 # BaseApp
 
-이 문서는 SDK 애플리케이션의 핵심 기능들을 구현하는 abstraction 인 `BaseApp` 을 설명합니다. {synopsis}
+이 문서는 SDK 애플리케이션의 코어 기능들을 구현하는 abstraction 인 `BaseApp` 을 설명합니다. {synopsis}
 
 ## 사전 요구 학습
 
@@ -13,14 +13,14 @@ order: 1
 
 ## 소개
 
-`BaseApp` 은 이름대로 SDK 애플리케이션의 핵심을 구현하는 기본 타입입니다:
+`BaseApp` 은 이름대로 SDK 애플리케이션의 코어를 구현하는 기본 타입입니다:
 
 - 상태 기계와 기반 합의 엔진(예: Tendermint) 이 상호작용하기 위한 [애플리케이션 블록체인 인터페이스](#abci)
 - 메시지와 쿼리를 적절한 모듈로 라우팅하기 위한 [서비스 라우터](#서비스-라우터-(service-routers))
 - 수신된 ABCI 메시지에 근거하여 상태 기계가 다른 휘발성 상태를 가질 수 있도록 하는 다른 [상태들](#상태들(states)),
 
-`BaseApp` 의 목적은 SDK 애플리케이션에 필수 레이어를 제공함으로써 개발자들이 그들의 커스텀 애플리케이션을 쉽게 확장할 수 있도록 하는 것입니다. 일반적으로
-개발자들은 그들의 애플리케이션을 위해 아래와 같은 커스텀 타입을 만들 것 입니다.
+`BaseApp` 의 목적은 SDK 애플리케이션에 필수 레이어를 제공함으로써 개발자들이 자신의 커스텀 애플리케이션을 쉽게 확장할 수 있도록 하는 것입니다. 일반적으로
+개발자들은 자신의 애플리케이션을 위해 아래와 같은 커스텀 타입을 만들 것 입니다.
 
 ```go
 type App struct {
@@ -35,7 +35,8 @@ type App struct {
 }
 ```
 
-`BaseApp` 으로 애플리케이션을 확장하면 `BaseApp` 모든 메서드에 접근할 수 있습니다. 이를 통해 개발자는 그들의 커스텀 애플리케이션을 원하는 모듈로 구성할 수 있고, ABCI와 서비스 라우터, 상태 관리 로직을 구현하는 힘든 일에 신경쓰지 않아도 됩니다.
+`BaseApp` 으로 애플리케이션을 확장하면 `BaseApp` 의 모든 메서드에 접근할 수 있습니다. 이를 통해 개발자는 그들의 커스텀 애플리케이션을 원하는 모듈로 구성할 수 
+있고, ABCI와 서비스 라우터, 상태 관리 로직을 구현하는 힘든 일에 신경쓰지 않아도 됩니다.
 
 ## 타입 정의 (Type Definition)
 
@@ -49,42 +50,42 @@ type App struct {
 
 먼저, 애플리케이션 부트스트랩 동안 초기화되는 중요 매개 변수들입니다.
 
-- [`CommitMultiStore`](./store.md#commitmultistore) : 애플리케이션의 주요 저장소로써 [각 블록의 마지막](#commit) 에 커밋되는 표준 상태를
+- [`CommitMultiStore`](./store.md#commitmultistore) : 애플리케이션의 메인 저장소로써 [각 블록의 마지막](#commit) 에 커밋되는 표준 상태를
   유지합니다. 이 저장소는 **캐시되지 않으며**, 이는 애플리케이션의 휘발성 상태 (커밋되지 않은) 를 업데이트하는데 사용되지 않습니다. 애플리케이션의 각 모듈은
   멀티 저장소에 있는 `KVStores` 를 사용하여 해당 상태의 서브셋을 유지합니다.
 
-- Database: `db` 는 `CommitMultiStore` 가 데이터 지속성을 처리하는데 사용됩니다.
+- 데이터베이스: `db` 는 `CommitMultiStore` 가 데이터 유지를 위해 사용합니다.
 
-- [메시지 서비스 라우터](#메시지-서비스-라우터-(Msg-service-router)): `msgServiceRouter` 는 적절한 `Msg` 서비스 모듈로 `sdk.Msg` 요청의
+- [메시지 서비스 라우터](#메시지-서비스-라우터-(Msg-service-router)): `msgServiceRouter` 는 해당 `Msg` 서비스 모듈로 `sdk.Msg` 요청의
   라우팅을 가능케 합니다. 여기서 `sdk.Msg` 는 애플리케이션과 기반 합의 엔진 간의 인터페이스를 구현하는 ABCI 메시지가 아니라 애플리케이션 상태 업데이트를 하기
   위해 서비스가 처리해야 하는 트랜잭션 구성요소를 의미합니다.
 
-- [gRPC 쿼리 라우터](#grpc-쿼리-라우터-(grpc-query-router)): `grpcQueryRouter` 는 gRPC 쿼리를 처리되기에 적절한 모듈로 라우팅합니다. 이
-  쿼리들은 ABCI 메시지 자체는 아니지만, 관련 모듈들의 gRPC `Query` 서비스로 전달됩니다.
+- [gRPC 쿼리 라우터](#grpc-쿼리-라우터-(grpc-query-router)): `grpcQueryRouter` 는 gRPC 쿼리를 처리하기 위해 해당 모듈로 라우팅합니다. 이
+  쿼리들은 ABCI 메시지 자체는 아니지만, 관련 모듈의 gRPC `Query` 서비스로 전달됩니다.
 
-- [`TxDecoder`](https://godoc.org/github.com/cosmos/cosmos-sdk/types#TxDecoder): Tendermint 엔진에 의해 전달된 로우 트랜잭션
-  바이트를 디코드하는데 사용됩니다.
+- [`TxDecoder`](https://godoc.org/github.com/cosmos/cosmos-sdk/types#TxDecoder): Tendermint 엔진이 전달한 로우 트랜잭션 바이트를 
+  디코드하는데 사용됩니다.
 
 - [`ParamStore`](#paramstore): 어플리케이션 합의 매개 변수를 get, set 할 때 사용됩니다.
 
-- [`AnteHandler`](#antehandler): 이 핸들러는 트랜잭션이 수신되었을 때 서명 검증, 비용 지불, 기타 사전 메시지 확인에 사용됩니다.
-  [`CheckTx/RecheckTx`](#checktx) 와 [`DeliverTx`](#delivertx) 중에 실행됩니다.
+- [`AnteHandler`](#antehandler): 이 핸들러는 트랜잭션이 수신되었을 때 서명 검증, 수수료 지불, 기타 사전 메시지 실행 확인에 사용됩니다. 
+  이는 [`CheckTx/RecheckTx`](#checktx) 와 [`DeliverTx`](#delivertx) 중에 실행됩니다.
 
 - [`InitChainer`](../basics/app-anatomy.md#initchainer),
   [`BeginBlocker` and `EndBlocker`](../basics/app-anatomy.md#beginblocker-and-endblocker): 애플리케이션이 Tendermint
-  엔진으로부터 `InitChain`, `BeginBlock` and `EndBlock` ABCI 메시지를 수신할 때 실행되는 기능들입니다.
+  엔진이 보낸 `InitChain`, `BeginBlock` 와 `EndBlock` ABCI 메시지를 수신하면 실행되는 기능들입니다.
 
 
-그리고, [휘발성 상태](#휘발성-상태(volatile-states)) (예: 캐시 상태) 를 정의하는데 사용되는 매개변수들 입니다:
+그리고, [휘발성 상태](#휘발성-상태-(volatile-states)) (예: 캐시 상태) 를 정의하는데 사용되는 매개변수들 입니다:
 
-- `checkState`: 이 상태는 [`CheckTx`](#checktx) 동안 업데이트되고, 그리고 [`Commit`](#commit) 시 재설정됩니다.
-- `deliverState`: 이 상태는 [`DeliverTx`](#delivertx) 동안 업데이트되고, 그리고 [`Commit`](#commit) 시 `nil` 로 설정되며,
-  `BeginBlock` 에서 다시 초기화됩니다.
+- `checkState`: 이 상태는 [`CheckTx`](#checktx) 동안 업데이트되고 [`Commit`](#commit) 시 재설정됩니다.
+- `deliverState`: 이 상태는 [`DeliverTx`](#delivertx) 동안 업데이트되고 [`Commit`](#commit) 시 `nil` 로 설정되며, `BeginBlock` 
+  에서 다시 초기화됩니다.
 
-마지막으로, 몇가지 더 중요한 매개 변수들:
+마지막으로, 더 중요한 몇 가지 매개 변수들입니다:
 
-- `voteInfos`: 이 매개 변수는 투표하지 않았거나, 제안자가 표를 포함하지 않아서 precommit 이 누락된 Validator 들의 목록을 포함합니다. 이 정보는
-  [Context](#context) 가 가지고 있고, 애플리케이션이 부재 Validator 징계같은 다양한 곳에 사용할 수 있습니다.
+- `voteInfos`: 이 매개 변수는 투표하지 않았거나, 제안자가 표를 포함하지 않아서 precommit 이 누락된 검증자들의 목록을 포함합니다. 이 정보는
+  [Context](#context) 가 가지고 있고, 애플리케이션이 부재 검증자 징계같은 다양한 곳에 사용할 수 있습니다.
 
 - `minGasPrices`: 이 매개 변수는 노드에서 허용되는 최소 가스 가격을 정의합니다. 이는 **로컬** 매개 변수이며, 모든 노드가 각각 다른 `minGasPrices` 를
   설정할 수 있음을 의미합니다. 주로 스팸 방지 메커니즘으로 [`CheckTx`](#checktx) 동안 `AnteHandler` 에서 사용됩니다. 트랜잭션이
@@ -105,21 +106,22 @@ func NewBaseApp(
 }
 ```
 
-`BaseApp` 생성자 함수는 아주 간단합니다. 주목할 만한 유일한 건 `BaseApp` 에 추가적인
-[`options`](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc3/baseapp/options.go) 를 제공하여 순차적으로 실행할 수도 있다는 것
+`BaseApp` 생성자 함수는 아주 간단합니다. 유일하게 주목할 만한건 `BaseApp` 에 추가적인
+[`options`](https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc3/baseapp/options.go) 를 제공해 순차적으로 실행할 수 있다는 것
 입니다. `options` 는 일반적으로 중요 매개 변수들을 위한 `setter` 함수들인데, 가지치기 옵션을 설정하는 `SetPruning()` 이나 노드의
 `min-gas-prices` 를 설정하는 `SetMinGasPrices()` 같은 것들입니다.
 
-자연적으로, 개발자는 그들의 애플리케이션 필요에 따라 추가 `options` 를 추가할 수 있습니다.
+개발자는 그들의 애플리케이션 필요에 따라 추가적인 `options` 를 추가할 수 있습니다.
 
 ## 상태 업데이트
 
-`BaseApp` 은 두 가지 주요 휘발성 상태와 루트 또는 메인 상태를 유지합니다. 메인 상태는 애플리케이션의 표준 상태이며, `checkState` 와 `deliverState`,
-이 휘발성 상태들은 `Commit` 동안 메인 상태 사이에서 상태 전환을 처리하는데 사용됩니다.
+`BaseApp` 은 두 가지 주요 휘발성 상태와 루트 또는 메인 상태를 유지합니다. 메인 상태는 애플리케이션의 표준 상태이며, 휘발성 상태인 `checkState` 와 
+`deliverState` 는 [`Commit`](#commit) 중에 메인 상태 사이에서 상태 전환을 처리하는데 사용됩니다.
 
 내부적으로는 메인 또는 루트 상태인 `CommitMultiStore` 만 존재합니다.  
-이 루트 상태를 통해, 우리는 _store branching_ (`CacheWrap` 함수가 수행) 이라고 불리는 메커니즘을 사용해 두 가지 휘발성 상태를 파생합니다. 타입들은
-다음과 같이 묘사될 수 있습니다.
+이 루트 상태를 통해, 우리는 _저장소 분기 (store branching,_ `CacheWrap` 함수가 수행) 라고 불리는 메커니즘을 사용해 두 가지 휘발성 상태를 파생합니다.   
+
+타입들은 다음과 같이 묘사될 수 있습니다.
 
 ![Types](baseapp_state_types.png)
 
@@ -327,7 +329,7 @@ Cosmos SDK 를 기반으로 하는 개발자들은 `BaseApp` 에 인터페이스
 +++ https://github.com/cosmos/cosmos-sdk/blob/v0.40.0-rc3/baseapp/baseapp.go#L623-L630
 
 이렇게 하면 `RunTx` 가 실패할 경우 `AnteHandler` 실행 중에 만들어진 상태 변경이 커밋되지 않도록 할 수 있습니다. 또한 `anteHandler` 를 구현하는 모듈이
-Cosmos SDK 의 [객체-기능](./ocap.md) 의 중요한 부분인 상태 저장하는 것을 방지합니다.
+Cosmos SDK 의 [오브젝트 자격 (Object-Capabilities)](./ocap.md) 의 중요한 부분인 상태 저장하는 것을 방지합니다.
 
 마지막으로, [`RunMsgs()`](#runmsgs) 함수는 `Tx` 의 `sdk.Msg` 들의 처리를 위해 호출됩니다. 이 단계의 준비로 `CacheMultiStore` 는
 `cacheTxContext()` 함수를 사용해서 분기됩니다.
@@ -369,7 +371,7 @@ Cosmos SDK 의 [객체-기능](./ocap.md) 의 중요한 부분인 상태 저장�
 엔진에서 전달됩니다. 이것은 주로 다음과 같은 매개 변수와 상태를 **초기화** 하는데 사용됩니다.
 
 - `setConsensusParams` 를 통한 [합의 매개 변수](https://tendermint.com/docs/spec/abci/apps.html#consensus-parameters) 초기화.
-- `setCheckState` 와 `setDeliverState` 를 통해 [`checkState` 와 `deliverState`](#volatile-states) 초기화.
+- `setCheckState` 와 `setDeliverState` 를 통해 [`checkState` 와 `deliverState`](#휘발성-상태-(volatile-states))초기화.
 - 제네시스 트랜잭션들을 처리하기 위해 [블록 가스 미터](../basics/gas-fees.md#block-gas-meter) 를 무한 가스로 초기화.
 
 마지막으로, `BaseApp`의 `InitChain(req abci.RequestInitChain)` 매서드는 애플리케이션의
@@ -383,8 +385,8 @@ Cosmos SDK 의 [객체-기능](./ocap.md) 의 중요한 부분인 상태 저장�
 `DeliverTx` 가 수신되기 전에 Tendermint 엔진이 올바른 제안자가 생성한 블록 제안을 수신하면 Tendermint 엔진에 의해서 보내집니다. 이를 통해 개발자는 각
 블록의 시작 부분에서 로직을 실행할 수 있습니다. Cosmos SDK 에서 `BeginBlock(req abci.RequestBeginBlock)` 메서드는 다음을 따릅니다:
 
-- `setDeliver` 을 통해 매개 변수로 전달된 `req abci.RequestBeginBlock` 를 사용한 마지막 헤더로 [`deliverState`](#volatile-states) 를
-  초기화합니다.
+- `setDeliver` 을 통해 매개 변수로 전달된 `req abci.RequestBeginBlock` 를 사용한 마지막 헤더로 
+  [`deliverState`](#휘발성-상태-(volatile-states)) 를 초기화합니다.  
   +++ https://github.com/cosmos/cosmos-sdk/blob/7d7821b9af132b0f6131640195326aa02b6751db/baseapp/baseapp.go#L387-L397
   이 함수는 또한 [메인 가스 미터](../basics/gas-fees.md#main-gas-meter) 를 초기화합니다.
 - `maxGas` 한도로 [블록 가스 미터](../basics/gas-fees.md#block-gas-meter) 를 초기화합니다. 블록 내의 `gas` 소비는 `maxGas` 를 초과할 수
@@ -392,7 +394,7 @@ Cosmos SDK 의 [객체-기능](./ocap.md) 의 중요한 부분인 상태 저장�
 - 애플리케이션의 [`beginBlocker()`](../basics/app-anatomy.md#beginblocker-and-endblock) 를 수행합니다. 이는 주로 각 애플리케이션의 모듈의
   [`BeginBlocker()`](../building-modules/beginblock-endblock.md#beginblock) 메서드를 수행합니다.
 - 애플리케이션의 [`VoteInfos`](https://tendermint.com/docs/app-dev/abci-spec.html#voteinfo) 를 설정합니다. 즉, 현재 블록의 제안자가
-  이전 블록에 포함된 _precommit_ Validator 의 목록을 설정합니다. 이 정보는 [`Context`](./context.md) 에 전달되어 `DeliverTx` 와
+  이전 블록에 포함된 _precommit_ 검증자 의 목록을 설정합니다. 이 정보는 [`Context`](./context.md) 에 전달되어 `DeliverTx` 와
   `EndBlock` 중에 사용할 수 있게 됩니다.
 
 ### EndBlock
@@ -405,12 +407,12 @@ Cosmos SDK 에서 벌크 `EndBlock(req abci.RequestEndBlock)` 매서드는 애�
 
 ### Commit
 
-[`Commit` ABCI 메시지](https://tendermint.com/docs/app-dev/abci-spec.html#commit) 는 풀노드가 Validator의 2/3 이상 (voting
+[`Commit` ABCI 메시지](https://tendermint.com/docs/app-dev/abci-spec.html#commit) 는 풀노드가 검증자의 2/3 이상 (voting
 power 로 가중치가 적용된) 으로부터 _precommits_ 를 수신한 후 Tendermint 엔진으로부터 보내집니다. `BaseApp` 끝에서,
 `Commit(res abci.ResponseCommit)` 함수 가 구현되어 `BeginBlock`, `DeliverTx` 와 `EndBlock` 동안 발생했던 모든 유효한 상태 전이가 커밋되며
 다음 블록을 위해 상태가 리셋됩니다.
 
-상태-전이를 커밋하기 위해, `Commit` 함수는 메인 저장소 `app.cms` 의 분기 멀티 저장소에 있는 `deliverState.ms` 의 `Write()` 함수를 호출합니다.
+상태 전이를 커밋하기 위해, `Commit` 함수는 메인 저장소 `app.cms` 의 분기 멀티 저장소에 있는 `deliverState.ms` 의 `Write()` 함수를 호출합니다.
 그런다음 `Commit` 함수는 `checkState` 를 최신 헤더 (`deliverState.ctx.BlockHeader` 에서 가져온) 에 설정하고, `deliverState` 를 `nil` 로
 설정합니다.
 
@@ -439,7 +441,7 @@ gRPC 라우터에 의해 (아직) 처리되지 않는 쿼리입니다. `BaseApp`
 - 멀티 저장소로의 직접 쿼리는 `handlerQueryStore` 메서드를 통해 지원합니다. 이 직접 쿼리들은 `app.queryRouter` 를 통하는 커스텀 쿼리와는 다르며,
   주로 블록 탐색기와 같은 서드파티 서비스 제공자들이 사용합니다.
 - P2P 쿼리는 `handlerQueryP2P` 메서드를 통해 지원합니다. 이 쿼리들은 주소를 `app.addrPeerFilter` 혹은 `app.ipPeerFilter` 를 반환하는데,
-  이들은 각각 주소와 IP로 필터링한 피어 리스트를 포함하고 있습니다. 이 리스트들은 `BaseApp` 의 [생성자](#constructor) 에서 `options` 를 통해
+  이들은 각각 주소와 IP로 필터링한 피어 리스트를 포함하고 있습니다. 이 리스트들은 `BaseApp` 의 [생성자](#생성자-(constructor)) 에서 `options` 를 통해
   초기화됩니다.
 
 ## Next {hide}
