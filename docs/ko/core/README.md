@@ -6,7 +6,7 @@ parent:
 
 # Core Concepts
 
-This repository contains reference documentation on the core concepts of the Cosmos SDK.
+여기는 Cosmos SDK 의 핵심 개념들에 대한 참고 문서를 포함하고 있습니다.
 
 1. [`BaseApp`](./baseapp.md)
 2. [Transaction](./transactions.md)
@@ -24,5 +24,4 @@ This repository contains reference documentation on the core concepts of the Cos
 14. [Protobuf documentation](./proto-docs.md)
 15. [In-Place Store Migrations](./upgrade.md)
 
-After reading about the core concepts, check the [IBC documentation](../ibc/README.md) to learn more
-about the IBC core concepts and how to integrate IBC in your application.
+핵심 개념들에 대해 읽은 후, [IBC 문서](../ibc/README.md) 에서 IBC 핵심 개념과 애플리케이션에서 어떻게 IBC 를 통합하는지 알아보세요.  
