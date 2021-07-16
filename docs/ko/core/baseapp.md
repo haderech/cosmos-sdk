@@ -4,7 +4,7 @@ order: 1
 
 # BaseApp
 
-이 문서는 SDK 애플리케이션의 코어 기능들을 구현하는 abstraction 인 `BaseApp` 을 설명합니다. {synopsis}
+이 문서는 SDK 애플리케이션의 코어 기능들을 구현하는 추상화인 `BaseApp` 을 설명합니다. {synopsis}
 
 ## 사전 요구 학습
 
@@ -174,7 +174,6 @@ func NewBaseApp(
 애플리케이션이 메시지와 쿼리를 수신할 때, 반드시 적절한 모듈로 라우팅해서 처리되게 해야 합니다. 라우팅은 `BaseApp` 의 메시지를 위한 `msgServiceRouter` 와
 쿼리를 위한 `grpcQueryRouter` 를 통해 수행됩니다.
 
-
 ### 메시지 서비스 라우터 (`Msg` Service Router)
 
 [`sdk.Msg`s](#../building-modules/messages-and-queries.md#messages) 는`CheckTx` 와 `DeliverTx` ABCI 메시지를 통해 Tendermint
@@ -208,14 +207,14 @@ func NewBaseApp(
 합의 엔진과 연결하여 기능적 풀노드를 형성하는 일반적인 인터페이스입니다. 모든 언어로 래핑할 수 있으며, Tendermint 와 같은 ABCI 호환이 가능한 합의 엔진 위에
 구축된 각각의 애플리케이션별 전용 블록체인에 의해 구현되어야 합니다.
 
-합의 엔진은 주요한 두 가지 일을 처리합니다
+합의 엔진은 두 가지 중요한 일을 처리합니다
 
 - 네트워크 로직. 주로 블록 파트, 거래, 합의 투표를 퍼트리는 일을 합니다.
 - 합의 로직. 블록의 형태로 트랜잭션들을 결정론적 순서로 만드는 일을 합니다.
 
 트랜잭션의 유효성과 상태를 정의하는 일은 합의 엔진의 역할이 **아닙니다.** 일반적으로 트랜잭션은 합의 엔진이 `[]bytes` 형태로 처리하며, ABCI 를 통해서
 애플리케이션에 전달되어 디코드되고 처리됩니다. 네트워크와 합의 처리의 중요한 부분 (예: 블록 시작, 블록 커밋, 확인되지 않은 트랜잭션 수신 등) 에서 합의 엔진은
-상태 기계가 작동하도록 ABCI 메시지를 내보냅니다.
+상태 기계가 작동하도록 ABCI 메시지를 전달합니다.
 
 Cosmos SDK 를 기반으로 하는 개발자들은 `BaseApp` 에 인터페이스가 내장되어 있기 때문에 ABCI 를 직접 구현할 필요가 없습니다. `BaseApp` 에서 구현하는
 주요 ABCI 메시지인 `CheckTx` 와 `DeliverTx` 를 살펴보겠습니다.
@@ -226,7 +225,7 @@ Cosmos SDK 를 기반으로 하는 개발자들은 `BaseApp` 에 인터페이스
 스팸 트랜잭션들로부터 풀노드의 메모리 풀 (확인되지 않은 트랜잭션이 블록에 포함되기 전까지 저장되는 곳) 을 보호하는 역할을 합니다. 확인되지 않은 트랜잭션들은
 `CheckTx` 를 통과한 경우에만 피어들에게 전달됩니다.
 
-`CheckTx()` 는 _stateful_ 과 _stateless_ 확인 모두 수행할 수 있으나, 개발자들은 이를 가볍게하기 위해 노력해야 합니다. Cosmos SDK 에서는
+`CheckTx()` 는 _stateful_ 과 _stateless_ 확인 모두 수행할 수 있으나, 개발자들은 이를 가볍게 만들기 위해 노력해야 합니다. Cosmos SDK 에서는
 [트랜잭션을 디코딩](./encoding.md) 한 후 `CheckTx()` 가 다음을 확인하도록 구현되어 있습니다.
 
 1. 트랜잭션에서 `sdk.Msg` 를 추출합니다.
@@ -241,11 +240,11 @@ Cosmos SDK 를 기반으로 하는 개발자들은 `BaseApp` 에 인터페이스
 
 두 번째와 세 번째 단계는 `CheckTx()` 가 `runTxModeCheck` 모드로 호출하는 `RunTx()` 함수 내의 `AnteHandler` 에 의해 수행됩니다.
 `CheckTx()` 의 각 단계 동안, `checkState` 라는 특수한 [휘발성 상태](#휘발성-상태-(volatile-states)) 가 업데이트 됩니다. 이 상태는
-[주요 표준 상태](#main-state) 를 수정하지 않고 각 트랜잭션의 CheckTx() 호출에 의해 트리거되어 임시 변화를 계속 추적하는데에 사용됩니다. 예를 들어,
+[표준 메인 상태](#main-state) 를 수정하지 않고 각 트랜잭션의 CheckTx() 호출에 의해 트리거되어 임시 변화를 계속 추적하는데에 사용됩니다. 예를 들어,
 트랜잭션이 `CheckTx()` 를 거칠 때, 트랜잭션 수수료는 `checkState` 내의 발신자 계정에서 공제됩니다. 첫 번째 트랜잭션이 처리되기 전에 만약 두 번째
 트랜잭션을 같은 계정으로부터 수신하고, 첫 번째 거래 중 `checkState` 에서 모든 자금을 소비했다면, 두 번째 트랜잭션은 `CheckTx()` 가 실패하고 거부될
-것입니다. 어떠한 경우라도 발신자의 계정은 트랜잭션이 실제로 블록에 포함되기 전까지는 수수료가 지불되지 않을 것입니다. 왜냐하면 `checkState` 는 절대로 주요
-상태를 커밋하지 않기 때문입니다. `checkState` 는 블록이 [커밋](#commit) 될 때마다 주요 상태의 최신 상태로 재설정 됩니다.
+것입니다. 어떠한 경우라도 발신자의 계정은 트랜잭션이 실제로 블록에 포함되기 전까지는 수수료가 지불되지 않을 것입니다. 왜냐하면 `checkState` 는 절대로 메인
+상태를 커밋하지 않기 때문입니다. `checkState` 는 블록이 [커밋](#commit) 될 때마다 메인 상태의 최신 상태로 재설정 됩니다.
 
 `CheckTx` 는 [`abci.ResponseCheckTx`](https://tendermint.com/docs/spec/abci/abci.html#messages) 타입의 합의 엔진에 대한 응답을
 반환합니다. 응답은 다음 항목들을 포함합니다:
@@ -276,7 +275,7 @@ Cosmos SDK 를 기반으로 하는 개발자들은 `BaseApp` 에 인터페이스
 
 어떤 블록의 첫 번째 트랜잭션이 처리되기 전에, [휘발성 상태](#휘발성-상태-(volatile-states)) 인 `deliverState` 가
 [`BeginBlock`](#beginblock) 중에 초기화됩니다. 이 상태는 `DeliverTx` 를 통해 트랜잭션이 처리될 때마다 업데이트되며, `nil` 로 설정된 이후에 블록이
-[커밋](#commit) 되면 [주요 상태](#주요-상태-(main-state)) 에 커밋됩니다.
+[커밋](#commit) 되면 [메인 상태](#메인-상태-(main-state)) 에 커밋됩니다.
 
 `DeliverTx` 는 **`CheckTx` 와 정확히 동일한 단계**를 수행하는데, 세 번째 단계에서 약간 주의해야하고 다섯 번째 단계가 추가되었습니다:
 
@@ -375,7 +374,7 @@ Cosmos SDK 의 [오브젝트 자격 (Object-Capabilities)](./ocap.md) 의 중요
 - 제네시스 트랜잭션들을 처리하기 위해 [블록 가스 미터](../basics/gas-fees.md#block-gas-meter) 를 무한 가스로 초기화.
 
 마지막으로, `BaseApp`의 `InitChain(req abci.RequestInitChain)` 매서드는 애플리케이션의
-[`initChainer()`](../basics/app-anatomy.md#initchainer) 을 호출하는데, 이를 통해서 애플리케이션의 주요 상태를 초기화 합니다. 이 때,  
+[`initChainer()`](../basics/app-anatomy.md#initchainer) 을 호출하는데, 이를 통해서 애플리케이션의 메인 상태를 초기화 합니다. 이 때,  
 `genesis file` 과, 정의되어 있다면 각 애플리케이션 모듈의 [`InitGenesis`](../building-modules/genesis.md#initgenesis) 함수가
 사용됩니다.
 
