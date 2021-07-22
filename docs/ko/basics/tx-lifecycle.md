@@ -4,17 +4,17 @@ order: 2
 
 # 트랜잭션 생명 주기
 
-이 문서에서는 생성부터 커밋된 상태 변경까지 트랜잭션의 수명 주기에 대해 설명합니다. 트랜잭션 정의는 [다른 문서](../core/transactions.md)에 설명되어 있습니다. 트랜잭션을 'Tx'라고 합니다. {개요}입니다.
+이 문서에서는 생성부터 커밋된 상태 변경까지 트랜잭션의 생명 주기에 대해 설명합니다. 트랜잭션 정의는 [다른 문서](../core/transactions.md)에 설명되어 있습니다. 트랜잭션을 'Tx'라고 합니다. {개요}입니다.
 
 ### 사전 읽기
 
-- [Anatomy of an SDK Application](./app-anatomy.md) {prereq}
+- [SDK Application 해부하기](./app-anatomy.md) {prereq}
 
 ## 생성
 
 ### 트랜잭션 생성
 
-주요 애플리케이션 인터페이스 중 하나는 커맨드-라인 인터페이스입니다. 트랜잭션 `Tx`는 사용자가 [command-line](../core/cli.md)의 다음 형식으로 명령을 입력하여 생성할 수 있으며, 이는 트랜잭션 타입의 `[command]`, 인수인 `[args]`, 가스 가격 같은 설정값인 `[flags]`로 구성됩니다.
+주요 애플리케이션 인터페이스 중 하나는 커맨드-라인 인터페이스입니다. 트랜잭션 `Tx`는 사용자가 [커맨드-라인](../core/cli.md)의 다음 형식으로 명령을 입력하여 생성할 수 있으며, 이는 트랜잭션 타입의 `[command]`, 인수인 `[args]`, 가스 가격 같은 설정값인 `[flags]`로 구성됩니다.
 
 ```bash
 [appname] tx [command] [args] [flags]
@@ -22,13 +22,13 @@ order: 2
 
 명령은 자동으로 트랜잭션을 **생성**하고, 계정의 개인키를 사용하여 **서명**한 뒤, 지정된 피어 노드로 **전송**합니다.
 
-트랜잭션 생성을 위한 몇 가지 필수 플래그와 선택 플래그가 있습니다. '--from' 플래그는 트랜잭션을 발생시키는 [account](.accounts.md)를 지정합니다. 예를 들어, 코인을 전송하는 트랜잭션에서 코인은 지정된 `from` 주소에서 인출됩니다.
+트랜잭션 생성을 위한 몇 가지 필수 플래그와 선택 플래그가 있습니다. `--from` 플래그는 트랜잭션을 발생시키는 [계정](.accounts.md)를 지정합니다. 예를 들어, 코인을 전송하는 트랜잭션에서 코인은 지정된 `from` 주소에서 인출됩니다.
 
 #### 가스와 가스비
 
-또한 사용자들은 [flags](../core/cli.md)를 통하여 [가스비](./gas-fees.md)를 얼마나 지불할지 지정할 수 있습니다.
+또한 사용자들은 [플래그](../core/cli.md)를 통하여 [가스비](./gas-fees.md)를 얼마나 지불할지 지정할 수 있습니다.
 
-- `--gas`는 연산자원을 나타내는 [가스](.gas-fees.md)의 소비량을 나타냅니다. 가스는 거래에 따라 달라지며 실행 시까지 정밀하게 계산되지 않지만 `--gas` 값으로 `auto`를 입력하여 추정할 수 있습니다.
+- `--gas`는 연산자원을 나타내는 [가스](.gas-fees.md)의 소비량을 나타냅니다. 가스는 트랜잭션에 따라 달라지며 실행 시까지 정밀하게 계산되지 않지만 `--gas` 값으로 `auto`를 입력하여 추정할 수 있습니다.
 - `--gas-adjustment`(선택)은 `가스`를 적게 추정되지 않게 크기를 키울 때 사용됩니다. 예를 들어, 사용자는 예상 가스의 1.5배를 사용하도록 가스 조정을 1.5로 지정할 수 있습니다.
 - `--gas-prices`는 사용자가 단위 가스당 얼마를 지불할 것인지를 지정합니다. 이 값은 한가지 혹은 여러 종류의 토큰으로 지정이 가능합니다. 예를 들어 `--gas-prices=0.025uatom, 0.025upho`는 사용자가 가스 단위당 0.025uatom 및 0.025uppo를 지불할 의사가 있음을 의미합니다.
 - `--fees`는 사용자가 총 얼마의 수수료를 지불할 것인지를 지정합니다.
@@ -36,7 +36,7 @@ order: 2
 
 최종 지불된 수수료의 가치는 가스에 가스 가격을 곱한 것과 같습니다. 다시 말해, `fees = ceil(gas * gasPrices)`입니다. 따라서 가스 가격에 따라 요금을 계산할 수 있고, 그 반대의 경우도 마찬가지이므로 사용자는 둘 중 하나만 지정합니다.
 
-나중에 검증자는 주어진 또는 계산된 `가스비`를 `최소 가스비`와 비교하여 거래를 블록에 포함할지 여부를 결정합니다. `Tx`는 가스비가 높지 않으면 거부되기 때문에 더 많은 가스비를 지불하도록 유도됩니다.
+나중에 검증자는 주어진 또는 계산된 `가스비`를 `최소 가스비`와 비교하여 트랜잭션을 블록에 포함할지 여부를 결정합니다. `Tx`는 가스비가 높지 않으면 거부되기 때문에 더 많은 가스비를 지불하도록 유도됩니다.
 
 #### CLI 예시
 
@@ -46,104 +46,89 @@ order: 2
 appd tx send <recipientAddress> 1000uatom --from <senderAddress> --gas auto --gas-adjustment 1.5 --gas-prices 0.025uatom
 ```
 
-#### 다른 트랜잭션을 생성하는 메서드
+#### 트랜잭션을 생성하는 다른 방법
 
 커맨드라인은 애플리케이션과 상호 작용하기 쉬운 방법이지만, 애플리케이션 개발자가 정의한 [gRPC 또는 REST 인터페이스](../core/grpc_rest.md)나 애플리케이션 진입 포인트를 사용하여 `Tx`를 생성할 수도 있습니다. 사용자 관점에서는 자신이 사용하는 웹 인터페이스나 월렛를 사용하고(예: [Lunie.io](https://lunie.io/#/) 로 `Tx` 생성), Ledger Nano S로 서명합니다.
 
 ## 멤풀에 추가
 
-`Tx`를 받은 각 풀 노드(Tendermint를 운영하는)는 `CheckTx`라는 [ABCI message](https://tendermint.com/docs/spec/abci/abci.html#messages) 를 유효성 확인을 위하여 애플리케이션 레이어로 전달한 뒤, `abci.ResponseCheckTx`를 받게 됩니다. 
-만일 `Tx`가 검증된다면, 'Tx'는 노드의 고유한 트랜잭션 메모리 풀인 [**Mempool**](https://tendermint.com/docs/tendermint-core/mempool.html#mempool) 에 처리 대기중으로 저장됩니다. 정직한 노드에서는 유효하지 않은 트랜잭션은 삭제됩니다.
+`Tx`를 받은 각 풀 노드(Tendermint를 운영하는)는 `CheckTx`라는 [ABCI 메시지](https://tendermint.com/docs/spec/abci/abci.html#messages) 를 유효성 확인을 위하여 애플리케이션 레이어로 전달한 뒤, `abci.ResponseCheckTx`를 받게 됩니다. 
+만일 `Tx`가 검증된다면, `Tx`는 노드의 고유한 트랜잭션 메모리 풀인 [**멤풀**](https://tendermint.com/docs/tendermint-core/mempool.html#mempool) 에 처리 대기중으로 저장됩니다. 정직한 노드에서는 유효하지 않은 트랜잭션은 삭제됩니다.
 컨센서스가 진행되기 전까지, 노드들은 계속 전달된 트랜잭션의 유효성을 확인하고 이를 연결된 피어에 가십 네트워크를 통해 전달합니다.
 
-### Types of Checks
+### 유효성 확인의 유형
 
 풀 노드는 `CheckTx`를 진행하는 동안 상태와 관계없는 유효성 검증을 먼저 진행하고, 그 뒤에 상태와 관계있는 검증을 진행합니다. 
 이를 통해 유효하지 않는 트랜잭션을 가능한 빠르게 파악하고 해당 트랜잭션을 거부하여 컴퓨팅 파워를 낭비를 방지합니다.
 
-**_Stateless_** 검사에서는 노드가 상태에 접근할 필요가 없으며 - 라이트 클라이언트 또는 오프라인 노드에서도 검증이 가능 - 컴퓨팅 비용이 저렴합니다. 
-상태와 관계없는 유효성 검증은 주소의 포함여부에 대한 확인, 음수가 되어서는 안되는 값에 대한 확인과 정의된 다른 지정 로직 등을 포함합니다.  
+**_상태 무관한_** 검사에서는 노드가 상태에 접근할 필요가 없으며 - 라이트 클라이언트 또는 오프라인 노드에서도 검증이 가능 - 컴퓨팅 비용이 저렴합니다. 
+상태와 관계없는 유효성 검증은 주소의 포함여부에 대한 확인, 음수가 되어서는 안되는 값에 대한 확인과 추가로 정의된 지정 로직 등을 포함합니다.  
 
-**_Stateful_** 검사는 커밋된 상태를 기반으로 트랜잭션 및 메시지의 유효성을 검증합니다. 
+**_상태 유관한_** 검사는 커밋된 상태를 기반으로 트랜잭션 및 메시지의 유효성을 검증합니다. 
 예를 들어 관련 값이 존재하는지, 그리고 주소와 거래할 수 있는지 검증합니다.
 충분한 자금을 보유하고 있는지, 송신자가 거래할 수 있는 권한이 있거나 올바른 소유권을 가지고 있는지 검증합니다.
 풀 노드는 항상 일반적으로 다양한 목적의 [여러 버전](../core/baseapp.md#volatile-states) 의 애플리케이션 상태가 있습니다.
 예를 들어 트랜잭션의 유효성을 검증하는 과정 중에 노드는 상태를 변경하는데, 이 때 쿼리에 대해 응답하기 위해서 마지막으로 커밋된 상태의 복사본을 갖고 있게 됩니다.
-커밋되지 않은 변경 사항이 있는 상태를 사용하여 쿼리에 응답해서는 안 됩니다.
+커밋되지 않은 변경 사항으로 쿼리에 응답해서는 안 됩니다.
 
 `Tx`를 검증하기 위해서, 풀 노드는 상태 유관한 유효성 검증과 상태 무관한 유효성 검증을 포함한 `CheckTx`를 호출합니다. 
 추가적인 유효성 검증은 이후에 [`DeliverTx`](#delivertx) 단계에서 진행됩니다. `CheckTx`는 `Tx` 디코딩을 시작으로 여러 단계를 거치게 됩니다.
 
-In order to verify a `Tx`, full-nodes call `CheckTx`, which includes both _stateless_ and _stateful_
-checks. Further validation happens later in the [`DeliverTx`](#delivertx) stage. `CheckTx` goes
-through several steps, beginning with decoding `Tx`.
-
 ### 디코딩
 
-애플리케이션이 컨센서스 엔진(예: Tendermint)으로부터 `Tx`를 수신하였을 때, [encoded](../core/encoding.md) `[]byte` 형태이기 때문에, `Tx`를 처리하기 위해서는 언마샬링 해야 합니다.
-언마셜링 후 `runTxModeCheck` 모드에서 [`runTx`](../core/baseapp.md#runtx-and-runmsgs) 가 호출되고, 
-Then, the [`runTx`](../core/baseapp.md#runtx-and-runmsgs) function is called to run in `runTxModeCheck` mode, meaning the function will run all checks but exit before executing messages and writing state changes.
+애플리케이션이 합의 엔진(예: Tendermint)으로부터 `Tx`를 수신하였을 때, [인코딩](../core/encoding.md) 된 `[]byte` 형태이기 때문에, `Tx`를 처리하기 위해서는 마샬링을 해제해야 합니다.
+마셜링 해제 후 `runTxModeCheck` 모드에서 [`runTx`](../core/baseapp.md#runtx-and-runmsgs) 가 호출되는데, 이 함수는 메시지를 실행하여 상태를 변경하기 전에 모든 검증을 마치고 종료되게 됩니다.
 
-### ValidateBasic
+### 기본 유효성 검증
 
-[`sdk.Msg`s](../core/transactions.md#messages) are extracted from `Tx`, and `ValidateBasic`, a method of the `sdk.Msg` interface implemented by the module developer, is run for each one. `ValidateBasic` should include basic **stateless** sanity checks. For example, if the message is to send coins from one address to another, `ValidateBasic` likely checks for nonempty addresses and a nonnegative coin amount, but does not require knowledge of state such as the account balance of an address.
+`Tx`의 [`sdk.Msg`s](../core/transactions.md#messages) 는 모듈 개발자에 의해 구현된 `sdk.Msg` 메서드 `ValidateBasic`를 각각 실행합니다. `ValidateBasic`은 **상태 무관한** 유효성 검사가 포함됩니다. 예를 들어 한 주소에서 다른 주소로 코인을 전송하는 경우 `ValidateBasic`은 주소가 비어있지 않다는 것과 코인 전송량이 음수가 아니라는 것을 확인하지만, 주소의 계정 잔액에 대한 정보는 요구하지 않습니다. 
 
 ### AnteHandler
 
-After the ValidateBasic checks, the `AnteHandler`s are run. Technically, they are optional, but in practice, they are very often present to perform signature verification, gas calculation, fee deduction and other core operations related to blockchain transactions.
+ValidateBasic 검증이 끝나면 `AnteHandler`가 실행됩니다. 기술적으로는 선택 사항이지만, 실제로는 서명 검증, 가스 계산, 수수료 공제 및 기타 블록체인 거래와 관련된 핵심 업무를 수행하기 위해 존재하는 경우가 많습니다.
 
-A copy of the cached context is provided to the `AnteHandler`, which performs limited checks specified for the transaction type. Using a copy allows the AnteHandler to do stateful checks for `Tx` without modifying the last committed state, and revert back to the original if the execution fails.
+트랜잭션 유형에 따라 지정된 검사를 수행하기 위해 캐시된 컨텍스트의 복사본이 `AnteHandler`에 제공됩니다. AnteHandler는 복사본을 사용하여 마지막 커밋 상태를 변경하지 않고 `Tx`에 대해 상태 유관한 유효성 검사를 수행하며, 실행에 실패한 경우 원래 상태로 되돌립니다.
 
-For example, the [`auth`](https://github.com/cosmos/cosmos-sdk/tree/master/x/auth/spec) module `AnteHandler` checks and increments sequence numbers, checks signatures and account numbers, and deducts fees from the first signer of the transaction - all state changes are made using the `checkState`.
+예를 들어, [`auth`](https://github.com/cosmos/cosmos-sdk/tree/master/x/auth/spec) 모듈인 `AnteHandler`는 시퀀스 번호를 확인, 증가시키고, 서명 및 계정 번호를 확인하여 트랜잭션의 첫 번째 서명자로부터 수수료를 공제합니다. - 모든 상태 변경은 `checkState`를 사용하여 수행됩니다.
 
-### Gas
+### 가스
 
-The [`Context`](../core/context.md), which keeps a `GasMeter` that will track how much gas has been used during the execution of `Tx`, is initialized. The user-provided amount of gas for `Tx` is known as `GasWanted`. If `GasConsumed`, the amount of gas consumed so during execution, ever exceeds `GasWanted`, the execution will stop and the changes made to the cached copy of the state won't be committed. Otherwise, `CheckTx` sets `GasUsed` equal to `GasConsumed` and returns it in the result. After calculating the gas and fee values, validator-nodes check that the user-specified `gas-prices` is less than their locally defined `min-gas-prices`.
+`Tx`를 실행하는 동안 사용되는 가스를 추적하는 `GasMeter`는 [`Context`](../core/context.md) 에서 초기화됩니다. 사용자가 제공하는 `Tx`의 가스량은 `GasWanted`라고 합니다. 실행 중 소비되는 가스의 양인 `GasConsumed`가 `GasWanted`를 초과하면 실행이 중지되고 캐시된 상태의 복사본에 대한 변경 사항이 적용되지 않습니다. `CheckTx`는 `GasConsumed`와 동일한 `GasUsed`를 결과값으로 반환합니다. 가스와 수수료를 계산한 뒤, 검증자-노드는 사용자가 지정한 `gas-prices`이 노드에서 설정한 `min-gas-prices`보다 적은지 확인합니다.
 
-### Discard or Addition to Mempool
+### 멤풀에 추가 혹은 삭제
 
-If at any point during `CheckTx` the `Tx` fails, it is discarded and the transaction lifecycle ends
-there. Otherwise, if it passes `CheckTx` successfully, the default protocol is to relay it to peer
-nodes and add it to the Mempool so that the `Tx` becomes a candidate to be included in the next block.
+`CheckTx` 중 어느 시점에서든 `Tx`가 실패하면 해당 항목이 폐기되고 트랜잭션 수명 주기가 종료됩니다.
+`CheckTx`를 성공적으로 통과하면 프로토콜은 `Tx`를 피어 노드에 전달하고, 이를 멤풀에 추가하여 다음 블록에 포함될 수 있는 후보가 되게 합니다.
 
-The **mempool** serves the purpose of keeping track of transactions seen by all full-nodes.
-Full-nodes keep a **mempool cache** of the last `mempool.cache_size` transactions they have seen, as a first line of
-defense to prevent replay attacks. Ideally, `mempool.cache_size` is large enough to encompass all
-of the transactions in the full mempool. If the the mempool cache is too small to keep track of all
-the transactions, `CheckTx` is responsible for identifying and rejecting replayed transactions.
+**멤풀**은 모든 전체 노드에서 확인되는 트랜잭션을 보관하기 위한 목적으로 사용됩니다.
+풀노드는 재전송 공격을 막기 위한 첫 번째 방어선으로, 그들이 마지막으로 확인한 `mempool.cache_size` 트랜잭션을 **멤풀 캐시**로 유지합니다.
+이상적으로 `mempool.cache_size`는 전체 멤풀의 모든 트랜잭션을 포함할 수 있을만큼 큽니다.
+멤풀 캐시가 모든 트랜잭션을 보관하기에 너무 작기 때문에, `CheckTx`는 재전송된 트랜잭션을 확인하고, 이를 거절하는 역할을 담당하게 된다.
 
-Currently existing preventative measures include fees and a `sequence` (nonce) counter to distinguish
-replayed transactions from identical but valid ones. If an attacker tries to spam nodes with many
-copies of a `Tx`, full-nodes keeping a mempool cache will reject identical copies instead of running
-`CheckTx` on all of them. Even if the copies have incremented `sequence` numbers, attackers are
-disincentivized by the need to pay fees.
+동일하지만 유효한 재전송 트랜잭션을 구별하기 위해 수수료와 `시퀀스` (논스) 카운터가 예방적 조치방법으로 존재합니다.
+만일 공격자가 복제된 많은 스팸 `Tx`을 노드로 전송한다면, 멤풀 캐시를 보관하는 풀노드에서는 모든 노드에서 `Checktx`를 실행하는 대신 동일한 복제 트랜잭션을 거부하게 됩니다.   
+심지어 복제본의 `시퀀스` 번호가 증가하더라도, 공격자는 수수료를 내기 때문에 공격에 대한 인센티브를 잃어버리게 됩니다.
 
-Validator nodes keep a mempool to prevent replay attacks, just as full-nodes do, but also use it as
-a pool of unconfirmed transactions in preparation of block inclusion. Note that even if a `Tx`
-passes all checks at this stage, it is still possible to be found invalid later on, because
-`CheckTx` does not fully validate the transaction (i.e. it does not actually execute the messages).
+검증자 노드는 풀노드와 마찬가지로 재전송 공격을 방지하기 위해 멤풀을 유지하지만 블록에 포함되기 위해 대기중인 확정되지 않은 트랜잭션의 풀로도 사용됩니다.
+이 단계에서 `Tx`가 모든 검사를 통과하더라도, `CheckTx`가 트랜잭션을 완전히 검증하지 않으므로(즉, 실제로 메시지를 실행하지 않기 때문에) 나중에 유효하지 않은 것으로 나타날 수 있습니다.
 
-## Inclusion in a Block
+## 블록에 포함
 
-Consensus, the process through which validator nodes come to agreement on which transactions to
-accept, happens in **rounds**. Each round begins with a proposer creating a block of the most
-recent transactions and ends with **validators**, special full-nodes with voting power responsible
-for consensus, agreeing to accept the block or go with a `nil` block instead. Validator nodes
-execute the consensus algorithm, such as [Tendermint BFT](https://tendermint.com/docs/spec/consensus/consensus.html#terms),
-confirming the transactions using ABCI requests to the application, in order to come to this agreement.
+검증자 노드가 트랜잭션 수용에 동의하는 과정인 컨센서스는 **라운드**로 발생하게 됩니다.
+각 라운드는 가장 최근의 트랜잭션으로 블록을 만드는 제안자로 시작하여 **검증자**에서 종료됩니다.
+검증자는 컨센서스에 투표할 책임이 있는 보팅 파워를 갖고 있는 특별한 풀 노드로, 블록을 수용하거나 `nil` 블록을 생성하는 것에 동의합니다.
+검증자 노드는 [텐더민트 BFT](https://tendermint.com/docs/spec/consensus/consensus.html#terms) 같은 컨센서스 알고리즘을 수행하고,
+애플리케이션으로 ABCI 요청하여 트랜잭션을 확정합니다.
+컨센서스의 첫번째 단계는 **블록 제안**입니다. 컨센서스 알고리즘을 통해 검증자 중 하나가 블록을 생성하고 제안하는 제안자로 선정됩니다.
+`Tx`이 블록에 포함되기 위해서는 해당 트랜잭션이 제안자의 멤풀에 있어야 합니다. 
 
-The first step of consensus is the **block proposal**. One proposer amongst the validators is chosen
-by the consensus algorithm to create and propose a block - in order for a `Tx` to be included, it
-must be in this proposer's mempool.
+## 상태의 변경
 
-## State Changes
-
-The next step of consensus is to execute the transactions to fully validate them. All full-nodes
-that receive a block proposal from the correct proposer execute the transactions by calling the ABCI functions
-[`BeginBlock`](./app-anatomy.md#beginblocker-and-endblocker), `DeliverTx` for each transaction,
-and [`EndBlock`](./app-anatomy.md#beginblocker-and-endblocker). While each full-node runs everything
-locally, this process yields a single, unambiguous result, since the messages' state transitions are deterministic and transactions are
-explicitly ordered in the block proposal.
+합의의 다음 단계는 트랜잭션을 실행하여 트랜잭션을 완전히 검증하는 것입니다.
+정직한 제안자로부터 제안된 블록을 받은 모든 풀 노드는 ABCI의 함수들을 호출하여 트랜잭션을 실행합니다.
+호출되는 함수는 [`BeginBlock`](./app-anatomy.md#beginblocker-and-endblocker), 각 트랜잭션 별로 호출되는 `DeliverTx`, 
+[`EndBlock`](./app-anatomy.md#beginblocker-and-endblocker)입니다.
+각 풀 노드는 모든 것을 로컬에서 실행하지만, 단일하고 명확한 결과를 만들어냅니다. 이는 블록 제안에서, 메시지의 상태 전환은 결정적이고 트랜잭션들은 블록 제안자에 의해 명시적으로 정렬되어 있기 때문입니다.
 
 ```
 		-----------------------
@@ -184,65 +169,55 @@ explicitly ordered in the block proposal.
 
 ### DeliverTx
 
-The `DeliverTx` ABCI function defined in [`BaseApp`](../core/baseapp.md) does the bulk of the
-state transitions: it is run for each transaction in the block in sequential order as committed
-to during consensus. Under the hood, `DeliverTx` is almost identical to `CheckTx` but calls the
-[`runTx`](../core/baseapp.md#runtx) function in deliver mode instead of check mode.
-Instead of using their `checkState`, full-nodes use `deliverState`:
+[`BaseApp`](../core/baseapp.md)에 정의된 `DeliverTx` ABCI 함수는 상태 변경을 수행합니다:
+컨센서스가 진행되는 동안 커밋된 대로 블록의 각 트랜잭션을 순차적으로 실행합니다.
+`DeliverTx`는 `CheckTx`와 거의 동일하지만, check 모드 대신 deliver 모드의 [`runTx`](../core/baseapp.md#runtx)를 호출한다는 차이가 있습니다.
+이때 풀 노드는 `checkState`를 사용하는 것이 아니라 `deliverState`를 사용하게 됩니다:
 
-- **Decoding:** Since `DeliverTx` is an ABCI call, `Tx` is received in the encoded `[]byte` form.
-  Nodes first unmarshal the transaction, using the [`TxConfig`](./app-anatomy#register-codec) defined in the app, then call `runTx` in `runTxModeDeliver`, which is very similar to `CheckTx` but also executes and writes state changes.
+- **Decoding:** `DeliverTx`는 ABCI의 호출이기 때문에 `Tx`는 인코딩된 `[]byte` 형태로 받게 됩니다.
+  노드는 먼저 앱에 정의된 [`TxConfig`](./app-anatomy#register-codec)를 사용하여 트랜잭션의 마샬링을 해제합니다.
+  그후 `runTxModeDeliver`의 `runTx`를 호출하는데, 이는 `CheckTx`와 매우 유사하지만, 상태의 변경을 실행, 기록한다는 측면에서 다릅니다.
 
-- **Checks:** Full-nodes call `validateBasicMsgs` and the `AnteHandler` again. This second check
-  happens because they may not have seen the same transactions during the addition to Mempool stage\
-  and a malicious proposer may have included invalid ones. One difference here is that the
-  `AnteHandler` will not compare `gas-prices` to the node's `min-gas-prices` since that value is local
-  to each node - differing values across nodes would yield nondeterministic results.
+- **Checks:** 풀 노드는 `validateBasicMsgs`와 `AnteHandler`를 호출합니다.
+  이 두 번째 검사는 멤풀 단계에 추가하는 과정에서 트랜잭션이 변경되었을 수 있으며, 악의적인 제안자가 잘못된 트랜잭션을 포함했을 수 있기 때문에 수행됩니다.
+  하나의 차이점은 `AnteHandler`는 각 노드마다 `min-gas-prices`가 다르기 때문에 `gas-prices`를 비교하지 않는다는 것입니다.
+  노드들의 `min-gas-prices` 차이는 비결정적인 결과를 만들어 낼 수 있습니다.
 
-- **`MsgServiceRouter`:** While `CheckTx` would have exited, `DeliverTx` continues to run
-  [`runMsgs`](../core/baseapp.md#runtx-and-runmsgs) to fully execute each `Msg` within the transaction.
-  Since the transaction may have messages from different modules, `BaseApp` needs to know which module
-  to find the appropriate handler. This is achieved using `BaseApp`'s `MsgServiceRouter` so that it can be processed by the module's Protobuf [`Msg` service](../building-modules/msg-services.md).
-  For `LegacyMsg` routing, the `Route` function is called via the [module manager](../building-modules/module-manager.md) to retrieve the route name and find the legacy [`Handler`](../building-modules/msg-services.md#handler-type) within the module.
+- **`MsgServiceRouter`:** `CheckTx`는 종료되는 반면 `DeliverTx`는 트랜잭션 안에 있는 `Msg`를 완전히 수행하기 위해 [`runMsgs`](../core/baseapp.md#runtx-and-runmsgs)를 실행합니다.
+  트랜잭션은 다양한 모듈들과 관련된 메시지를 갖고 있기 때문에, `BaseApp`은 이를 처리하기 위한 적절한 핸들러가 무엇인지 알고 있어야 합니다.    
+  이때 `BaseApp`의 `MsgServiceRouter`가 사용되는데, `MsgServiceRouter`는 모듈의 Protobuf [`Msg` service](../building-modules/msg-services.md)로 처리됩니다.
+  `LegacyMsg` 라우팅을 위해서, [module manager](../building-modules/module-manager.md)를 통해 `Route` 함수가 호출됩니다. 
+  `Route` 함수는 Route 이름을 검색하여 모듈의 레거시 [`Handler`](../building-modules/msg-services.md#handler-type)를 찾아옵니다.
 
-- **`Msg` service:** a Protobuf `Msg` service, a step up from `AnteHandler`, is responsible for executing each
-  message in the `Tx` and causes state transitions to persist in `deliverTxState`.
+- **`Msg` service:** `AnteHandler`보다 한 단계 높은 Protobuf `Msg` 서비스는 `Tx`의 각 메시지 실행을 담당하며 `deliverTxState`에서 상태 전환이 지속되도록 합니다.
 
-- **Gas:** While a `Tx` is being delivered, a `GasMeter` is used to keep track of how much
-  gas is being used; if execution completes, `GasUsed` is set and returned in the
-  `abci.ResponseDeliverTx`. If execution halts because `BlockGasMeter` or `GasMeter` has run out or something else goes
-  wrong, a deferred function at the end appropriately errors or panics.
+- **Gas:** `GasMeter`는 `Tx`가 전달되는 동안 가스가 얼마나 사용되는지를 추적하는데 사용됩니다.
+  실행이 완료되면, `GasUsed`가 설정되고 `abci.ResponseDeliverTx`로 반환되게 됩니다.
+  `BlockGasMeter`나 `GasMeter`가 소진되거나, 이슈가 발생하여 실행이 멈추게 되면, 지연된 함수는 결국 에러나 패닉을 발생하게 된다.
 
-If there are any failed state changes resulting from a `Tx` being invalid or `GasMeter` running out,
-the transaction processing terminates and any state changes are reverted. Invalid transactions in a
-block proposal cause validator nodes to reject the block and vote for a `nil` block instead.
+`Tx`가 유효하지 않거나 `GasMeter`가 소진되어 실패한 상태 변경이 있으면 트랜잭션 처리가 종료되고 상태 변경 내용이 복구됩니다.
+블록 제안에 잘못된 트랜잭션이 있으면 검증자 노드가 블록을 거부하고 대신 'nil' 블록에 투표합니다.
 
-### Commit
+### 커밋
 
-The final step is for nodes to commit the block and state changes. Validator nodes
-perform the previous step of executing state transitions in order to validate the transactions,
-then sign the block to confirm it. Full nodes that are not validators do not
-participate in consensus - i.e. they cannot vote - but listen for votes to understand whether or
-not they should commit the state changes.
+마지막 단계는 노드가 블록 및 상태 변경을 커밋하는 것입니다.
+검증자 노드는 상태 변경을 수행하여 트랜잭션을 검증한 다음 블록에 서명하여 확인합니다.
+검증자가 아닌 풀 노드는 합의에 참여하지 않지만(예: 투표할 수 없음) 상태 변경을 커밋해야 하는지 여부를 알기 위해 투표를 수신합니다.
 
-When they receive enough validator votes (2/3+ _precommits_ weighted by voting power), full nodes commit to a new block to be added to the blockchain and
-finalize the state transitions in the application layer. A new state root is generated to serve as
-a merkle proof for the state transitions. Applications use the [`Commit`](../core/baseapp.md#commit)
-ABCI method inherited from [Baseapp](../core/baseapp.md); it syncs all the state transitions by
-writing the `deliverState` into the application's internal state. As soon as the state changes are
-committed, `checkState` start afresh from the most recently committed state and `deliverState`
-resets to `nil` in order to be consistent and reflect the changes.
+풀 노드가 충분한 수의 검증자 투표를 수신하면 (2/3+만큼의 _precommits_ 투표), 풀 노드는 블록체인에 추가할 새로운 블록을 커밋하고, 애플리케이션 레이어에서 상태 변경을 확정합니다.
+새로운 상태 루트가 생성되어 상태 변경에 대한 머클 증명 역할을 합니다.
+애플리케이션은 [Baseapp](../core/baseapp.md)을 상속한 [`Commit`](../core/baseapp.md#commit) ABCI 메서드를 사용합니다;
+애플리케이션의 내부 상태에 `deliverState`를 작성하여 모든 상태 변경을 동기화합니다.
+상태 변경이 커밋되는 즉시, `checkState`는 최신의 커밋된 상태에서 새롭게 시작되고, `deliverState`는 일관성과 변경을 반영하기 위해 `nil`로 리셋합니다.
 
-Note that not all blocks have the same number of transactions and it is possible for consensus to
-result in a `nil` block or one with none at all. In a public blockchain network, it is also possible
-for validators to be **byzantine**, or malicious, which may prevent a `Tx` from being committed in
-the blockchain. Possible malicious behaviors include the proposer deciding to censor a `Tx` by
-excluding it from the block or a validator voting against the block.
+모든 블록이 동일한 트랜잭션 수를 가지는 것은 아니며 합의에 따라 `nil` 블록이 생성되거나 비어있는 블록이 생성될 수 있습니다.
+퍼블릭 블록체인 네트워크에서는 검증자가 **비잔틴**이거나 또는 악의적으로 행동할 수 있어 `Tx`가 블록체인에 커밋되지 않을 수 있습니다.
+악의적 행동을 하는 노드에는 `Tx`를 검열하여 블록에서 제외하는 제안자나 블록에 대한 투표를 거부하는 검증자 등이 포함됩니다.
 
-At this point, the transaction lifecycle of a `Tx` is over: nodes have verified its validity,
-delivered it by executing its state changes, and committed those changes. The `Tx` itself,
-in `[]byte` form, is stored in a block and appended to the blockchain.
+커밋에서 트랜잭션`Tx`의 생명 주기는 끝나게 됩니다.:
+노드는 유효성을 검증하고 상태 변경을 수행하며 전달한 후, 변경을 커밋으로 반영합니다.
+`Tx`는 `[]byte` 형태로 블록에 저장되며, 블록체인에 추가됩니다.
 
-## Next {hide}
+## 다음 {숨김}
 
-Learn about [accounts](./accounts.md) {hide}
+[accounts](./accounts.md)에 대해 배우기 {숨김}
