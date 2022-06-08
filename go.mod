@@ -28,14 +28,14 @@ require (
 	github.com/improbable-eng/grpc-web v0.14.0
 	github.com/jhump/protoreflect v1.8.2
 	github.com/magiconair/properties v1.8.5
-	github.com/mattn/go-isatty v0.0.13
+	github.com/mattn/go-isatty v0.0.14
 	github.com/otiai10/copy v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/common v0.29.0
 	github.com/rakyll/statik v0.1.7
 	github.com/regen-network/cosmos-proto v0.3.1
-	github.com/rs/zerolog v1.23.0
+	github.com/rs/zerolog v1.27.0
 	github.com/spf13/cast v1.3.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
